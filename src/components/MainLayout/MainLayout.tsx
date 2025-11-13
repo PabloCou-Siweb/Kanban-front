@@ -23,6 +23,8 @@ type MainLayoutProps = {
   onOpenSettings?: (project: SidebarProject) => void;
   onOpenComponents?: (project: SidebarProject) => void;
   onOpenRepository?: (project: SidebarProject) => void;
+  onOpenReports?: (project: SidebarProject) => void;
+  onOpenIssues?: (project: SidebarProject) => void;
   headerNotifications?: HeaderProps['notifications'];
 };
 
@@ -49,6 +51,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenSettings,
   onOpenComponents,
   onOpenRepository,
+  onOpenReports,
+  onOpenIssues,
   headerNotifications,
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
@@ -162,6 +166,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                         if (section.id === 'repository' && selectedProject) {
                           onSelect(selectedProject.id);
                           onOpenRepository?.(selectedProject);
+                        }
+                        if (section.id === 'issues' && selectedProject) {
+                          onSelect(selectedProject.id);
+                          onOpenIssues?.(selectedProject);
+                        }
+                        if (section.id === 'reports' && selectedProject) {
+                          onSelect(selectedProject.id);
+                          onOpenReports?.(selectedProject);
                         }
                       }}
                     >

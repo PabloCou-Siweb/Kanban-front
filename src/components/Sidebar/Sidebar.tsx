@@ -144,11 +144,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`flex min-h-screen flex-col justify-between border-r border-slate-200 bg-slate-50/60 p-4 text-slate-700 transition-[width] duration-300 ease-out ${
+      className={`sticky top-0 z-30 flex h-screen flex-col border-r border-slate-200 bg-slate-50/60 p-4 text-slate-700 transition-[width] duration-300 ease-out ${
         collapsed ? 'w-18' : 'w-60'
       }`}
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-1 flex-col gap-6 overflow-y-auto pr-1">
         {collapsed ? (
           <div className="flex flex-col items-center gap-3">
             <img src="/img/kanban-logo2.svg" alt="Kanban" className="h-10 w-10" />
@@ -231,7 +231,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      <div className="mt-auto border-t border-slate-200 pt-4">
+      <div className="border-t border-slate-200 pt-4">
         <button
           type="button"
           onClick={onLogoutRequest}

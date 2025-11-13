@@ -2,7 +2,7 @@ import React from 'react';
 import Sidebar, { DEFAULT_PROJECTS, SidebarProject } from '../Sidebar/Sidebar';
 import Header, { HeaderProps } from '../Header/Header';
 
-type ComponentCategory = 'layout' | 'brand' | 'media' | 'code';
+type ComponentCategory = 'logos' | 'iconos' | 'ilustraciones' | 'fondos';
 
 type StoredComponent = {
   id: string;
@@ -11,103 +11,69 @@ type StoredComponent = {
   category: ComponentCategory;
   updatedAt: string;
   tags: string[];
-  preview?: string;
-};
-
-type ComponentActivity = {
-  id: string;
-  timestamp: string;
-  author: string;
-  action: 'created' | 'updated' | 'imported' | 'exported';
-  componentName: string;
-  details?: string;
+  preview: string;
 };
 
 const COMPONENT_CATEGORIES: Array<{ id: ComponentCategory; label: string }> = [
-  { id: 'layout', label: 'Layouts & UI' },
-  { id: 'brand', label: 'Branding' },
-  { id: 'media', label: 'Medios' },
-  { id: 'code', label: 'Snippets & Hooks' },
+  { id: 'logos', label: 'Logos' },
+  { id: 'iconos', label: 'Iconografía' },
+  { id: 'ilustraciones', label: 'Ilustraciones' },
+  { id: 'fondos', label: 'Fondos' },
 ];
+
+const CATEGORY_LABEL: Record<ComponentCategory, string> = COMPONENT_CATEGORIES.reduce(
+  (acc, category) => {
+    acc[category.id] = category.label;
+    return acc;
+  },
+  {} as Record<ComponentCategory, string>,
+);
 
 const COMPONENTS: StoredComponent[] = [
   {
     id: 'cmp-001',
-    name: 'Header principal',
-    description: 'Barra superior con navegación, botón de perfil y acciones rápidas.',
-    category: 'layout',
-    updatedAt: 'Actualizado hace 1 día',
-    tags: ['header', 'layout', 'navegación'],
-    preview: '/img/preview-header.png',
-  },
-  {
-    id: 'cmp-002',
     name: 'Logo isotipo',
-    description: 'SVG con variaciones claras y oscuras.',
-    category: 'brand',
-    updatedAt: 'Actualizado hace 3 días',
-    tags: ['logo', 'brand'],
+    description: 'Logotipo principal en formato SVG con versiones light y dark.',
+    category: 'logos',
+    updatedAt: 'Actualizado hace 1 día',
+    tags: ['branding', 'isotipo'],
     preview: '/img/kanban-logo.svg',
   },
   {
+    id: 'cmp-002',
+    name: 'Icono tablero',
+    description: 'Icono minimalista para representar tableros o paneles Kanban.',
+    category: 'iconos',
+    updatedAt: 'Actualizado hace 2 días',
+    tags: ['icono', 'ui'],
+    preview: '/img/icon-board.svg',
+  },
+  {
     id: 'cmp-003',
-    name: 'Módulo hero marketing',
-    description: 'Sección hero con CTA doble y mockups ilustrativos.',
-    category: 'layout',
+    name: 'Ilustración equipo',
+    description: 'Ilustración en tonos azules para secciones de equipo y colaboración.',
+    category: 'ilustraciones',
     updatedAt: 'Actualizado hace 4 días',
-    tags: ['landing', 'hero'],
+    tags: ['ilustración', 'team'],
     preview: '/img/kanban-image.svg',
   },
   {
     id: 'cmp-004',
-    name: 'Hook useKanbanBoard',
-    description: 'Hook de React para gestionar columnas, drag & drop y filtros.',
-    category: 'code',
+    name: 'Background ondas',
+    description: 'Fondo con ondas suaves y degradados para headers o secciones hero.',
+    category: 'fondos',
     updatedAt: 'Actualizado hace 6 horas',
-    tags: ['react', 'hook', 'board'],
+    tags: ['background', 'gradient'],
+    preview: '/img/background-waves.svg',
   },
   {
     id: 'cmp-005',
-    name: 'Avatar circular',
-    description: 'Componente de avatar con iniciales y gradientes.',
-    category: 'media',
-    updatedAt: 'Actualizado hace 2 días',
-    tags: ['avatar', 'ui'],
-  },
-];
-
-const COMPONENT_ACTIVITY: ComponentActivity[] = [
-  {
-    id: 'cmp-log-001',
-    timestamp: '12 Abr · 12:10',
-    author: 'María Sánchez',
-    action: 'updated',
-    componentName: 'Header principal',
-    details: 'Se ajustó el comportamiento responsive y se añadieron accesos rápidos.',
-  },
-  {
-    id: 'cmp-log-002',
-    timestamp: '11 Abr · 09:47',
-    author: 'Ana Rodríguez',
-    action: 'imported',
-    componentName: 'Módulo hero marketing',
-    details: 'Importado desde proyecto Website 2025.',
-  },
-  {
-    id: 'cmp-log-003',
-    timestamp: '10 Abr · 17:22',
-    author: 'Carlos Ortega',
-    action: 'created',
-    componentName: 'Hook useKanbanBoard',
-    details: 'Primer versión con soporte para columnas dinámicas.',
-  },
-  {
-    id: 'cmp-log-004',
-    timestamp: '09 Abr · 15:05',
-    author: 'Laura Méndez',
-    action: 'exported',
-    componentName: 'Logo isotipo',
-    details: 'Exportado a proyecto Marketing Launch.',
+    name: 'Icono campana',
+    description: 'Campana de notificaciones con contorno limpio y relleno adaptable.',
+    category: 'iconos',
+    updatedAt: 'Actualizado hace 3 días',
+    tags: ['icono', 'alerta'],
+    preview: '/img/notification-icon.svg',
   },
 ];
 
@@ -136,11 +102,33 @@ const ComponentsPage: React.FC<ComponentsPageProps> = ({
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [activeCategory, setActiveCategory] = React.useState<ComponentCategory | 'all'>('all');
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [componentItems, setComponentItems] = React.useState<StoredComponent[]>(COMPONENTS);
+  const [showNewComponentModal, setShowNewComponentModal] = React.useState(false);
+  const [newComponentForm, setNewComponentForm] = React.useState<{
+    name: string;
+    description: string;
+    category: ComponentCategory;
+  }>({
+    name: '',
+    description: '',
+    category: 'logos',
+  });
+  const [newComponentPreview, setNewComponentPreview] = React.useState<string | null>(null);
+  const [newComponentFileName, setNewComponentFileName] = React.useState<string>('');
+  const [exportComponent, setExportComponent] = React.useState<StoredComponent | null>(null);
+  const [showExportModal, setShowExportModal] = React.useState(false);
+  const [exportOptions, setExportOptions] = React.useState<{
+    format: 'png' | 'svg';
+    includeMetadata: boolean;
+  }>({
+    format: 'png',
+    includeMetadata: true,
+  });
 
   const projectList = React.useMemo(() => projects ?? DEFAULT_PROJECTS, [projects]);
 
   const filteredComponents = React.useMemo(() => {
-    return COMPONENTS.filter((component) => {
+    return componentItems.filter((component) => {
       const matchCategory = activeCategory === 'all' || component.category === activeCategory;
       const matchSearch = searchTerm.trim()
         ? component.name.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
@@ -149,7 +137,133 @@ const ComponentsPage: React.FC<ComponentsPageProps> = ({
         : true;
       return matchCategory && matchSearch;
     });
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, componentItems]);
+
+  const handleOpenNewComponentModal = React.useCallback(() => {
+    setShowNewComponentModal(true);
+  }, []);
+
+  const resetNewComponentState = React.useCallback(() => {
+    setNewComponentForm({
+      name: '',
+      description: '',
+      category: 'logos',
+    });
+    setNewComponentPreview(null);
+    setNewComponentFileName('');
+  }, []);
+
+  const handleCloseNewComponentModal = React.useCallback(() => {
+    setShowNewComponentModal(false);
+    resetNewComponentState();
+  }, [resetNewComponentState]);
+
+  const handleOpenExportModal = React.useCallback((component: StoredComponent) => {
+    const supportsSvg = component.preview.toLowerCase().endsWith('.svg');
+    setExportComponent(component);
+    setExportOptions({
+      format: supportsSvg ? 'svg' : 'png',
+      includeMetadata: true,
+    });
+    setShowExportModal(true);
+  }, []);
+
+  const handleCloseExportModal = React.useCallback(() => {
+    setShowExportModal(false);
+    setExportComponent(null);
+  }, []);
+
+  const handleExportMetadataToggle = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setExportOptions((prev) => ({
+      ...prev,
+      includeMetadata: event.target.checked,
+    }));
+  }, []);
+
+  const handleExportFormatToggle = React.useCallback(
+    (format: 'png' | 'svg') => {
+      setExportOptions((prev) => {
+        if (
+          format === 'svg' &&
+          exportComponent &&
+          !exportComponent.preview.toLowerCase().endsWith('.svg')
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          format,
+        };
+      });
+    },
+    [exportComponent],
+  );
+
+  const handleExecuteExport = React.useCallback(() => {
+    // Aquí se integraría la exportación real (descarga de archivo o llamada a API).
+    setShowExportModal(false);
+    setExportComponent(null);
+  }, []);
+
+  const handleNewComponentInputChange = React.useCallback(
+    (field: 'name' | 'description' | 'category') =>
+      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const value = event.target.value;
+        setNewComponentForm((prev) => ({
+          ...prev,
+          [field]: field === 'category' ? (value as ComponentCategory) : value,
+        }));
+      },
+    [],
+  );
+
+  const handleNewComponentFileChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setNewComponentPreview(null);
+      setNewComponentFileName('');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setNewComponentPreview(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    setNewComponentFileName(file.name);
+  }, []);
+
+  const handleSubmitNewComponent = React.useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!newComponentForm.name.trim()) {
+        return;
+      }
+
+      if (!newComponentPreview) {
+        return;
+      }
+
+      const newComponent: StoredComponent = {
+        id: `cmp-${Date.now()}`,
+        name: newComponentForm.name.trim(),
+        description: newComponentForm.description.trim() || 'Sin descripción',
+        category: newComponentForm.category,
+        updatedAt: 'Añadido hace un momento',
+        tags: [newComponentForm.category],
+        preview: newComponentPreview,
+      };
+
+      setComponentItems((prev) => [newComponent, ...prev]);
+      setShowNewComponentModal(false);
+      resetNewComponentState();
+    },
+    [newComponentForm, newComponentPreview, resetNewComponentState],
+  );
 
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
@@ -170,179 +284,114 @@ const ComponentsPage: React.FC<ComponentsPageProps> = ({
           notifications={headerNotifications}
         />
 
-        <main className="flex flex-1 flex-col gap-6 overflow-hidden p-8">
-          <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-900/5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Proyecto</p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-                <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-semibold uppercase tracking-wide text-blue-600">
-                  Biblioteca activa · {COMPONENTS.length} componentes
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 font-semibold uppercase tracking-wide text-slate-500">
-                  Importa, exporta y versiona elementos
-                </span>
-              </div>
-            </div>
-            <p className="mt-4 max-w-3xl text-sm text-slate-600">
-              Guarda componentes reutilizables de UI, assets de marca o snippets de código. Exporta fácilmente componentes como
-              el header principal para usarlos en otros proyectos o importa activos desde diferentes equipos.
-            </p>
-          </section>
+        <main className="flex-1 overflow-y-auto bg-slate-50">
+          <div className="mx-auto w-full max-w-7xl space-y-10 px-6 py-10">
+            <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-900/10">
+              <header className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">Biblioteca</p>
+                <h2 className="text-2xl font-semibold text-slate-900">
+                  {project ? project.name : 'Componentes del tablero'}
+                </h2>
+                <p className="max-w-xl text-sm text-slate-500">
+                  Centraliza iconos, logotipos, ilustraciones o fondos reutilizables para compartirlos con otros proyectos. Mantén
+                  un repositorio sencillo y siempre accesible desde este espacio.
+                </p>
+              </header>
+            </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-lg shadow-slate-900/5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-wrap gap-2">
+            <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-sm shadow-slate-900/10">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
+                  onClick={handleOpenNewComponentModal}
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                 >
-                  <span>+ Nuevo componente</span>
+                  + Nuevo componente
                 </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-                >
-                  Importar
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-                >
-                  Exportar selección
-                </button>
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm">
+                  <input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Buscar por nombre o etiqueta"
+                    className="flex-1 bg-transparent text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none"
+                  />
+                </div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500">
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por nombre, descripción o tag"
-                  className="flex-1 focus:outline-none"
-                />
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  {filteredComponents.length} resultados
-                </span>
-              </div>
-            </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveCategory('all')}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
-                  activeCategory === 'all'
-                    ? 'border-blue-300 bg-blue-50 text-blue-600'
-                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                }`}
-              >
-                Todos
-              </button>
-              {COMPONENT_CATEGORIES.map((category) => (
+              <div className="mt-6 flex flex-wrap gap-2">
                 <button
-                  key={category.id}
                   type="button"
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
-                    activeCategory === category.id
-                      ? 'border-blue-300 bg-blue-50 text-blue-600'
-                      : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                  onClick={() => setActiveCategory('all')}
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                    activeCategory === 'all'
+                      ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/20'
+                      : 'border border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
                   }`}
                 >
-                  {category.label}
+                  Todos
                 </button>
-              ))}
-            </div>
+                {COMPONENT_CATEGORIES.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                      activeCategory === category.id
+                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                        : 'border border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredComponents.map((component) => (
-                <article
-                  key={component.id}
-                  className="flex h-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm transition hover:border-blue-200 hover:shadow-lg"
-                >
-                  <header className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900">{component.name}</h3>
-                      <p className="mt-1 text-xs text-slate-500">{component.description}</p>
-                    </div>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {component.category}
-                    </span>
-                  </header>
+            <section className="space-y-4">
+              <header className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">Componentes guardados</h3>
+                <span className="text-xs text-slate-400">Selecciona un elemento para ver su descripción.</span>
+              </header>
 
-                  {component.preview && (
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                      <img src={component.preview} alt={component.name} className="h-32 w-full rounded-xl object-contain" />
-                    </div>
-                  )}
-
-                  <footer className="mt-auto flex flex-col gap-3 text-xs text-slate-500">
-                    <div className="flex flex-wrap gap-2">
-                      {component.tags.map((tag) => (
-                        <span
-                          key={`${component.id}-${tag}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide"
-                        >
-                          #{tag}
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filteredComponents.map((component) => (
+                  <article
+                    key={component.id}
+                    className="flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm shadow-slate-900/10 transition hover:border-blue-200 hover:shadow-lg"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-semibold text-slate-900">{component.name}</h4>
+                          <p className="mt-1 text-xs text-slate-500">{component.description}</p>
+                        </div>
+                        <span className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          {CATEGORY_LABEL[component.category]}
                         </span>
-                      ))}
+                      </div>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <img src={component.preview} alt={component.name} className="h-32 w-full rounded-xl object-contain" />
+                      </div>
+                      {/* Etiquetas removidas según solicitud */}
                     </div>
-                    <span className="font-semibold text-slate-600">{component.updatedAt}</span>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                      <span>{component.updatedAt}</span>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
+                        onClick={() => handleOpenExportModal(component)}
+                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
                       >
                         Exportar
                       </button>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-                      >
-                        Duplicar
-                      </button>
                     </div>
-                  </footer>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 text-xs text-slate-600 shadow-lg shadow-slate-900/5">
-            <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">Actividad reciente</h3>
-                <p className="text-xs text-slate-500">Acciones relacionadas con creación, importación y exportación de componentes.</p>
+                  </article>
+                ))}
               </div>
-              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Log sincronizado con repositorio de diseño
-              </div>
-            </header>
+            </section>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {COMPONENT_ACTIVITY.map((entry) => (
-                <article
-                  key={entry.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{entry.timestamp}</span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {entry.author} · {entry.action === 'created'
-                      ? 'Creó'
-                      : entry.action === 'updated'
-                      ? 'Actualizó'
-                      : entry.action === 'imported'
-                      ? 'Importó'
-                      : 'Exportó'}{' '}
-                    {entry.componentName}
-                  </span>
-                  {entry.details && <span className="text-xs text-slate-500">{entry.details}</span>}
-                </article>
-              ))}
-            </div>
-          </section>
+            {/* Sección de actividad reciente eliminada según la solicitud */}
+          </div>
         </main>
       </div>
 
@@ -373,6 +422,223 @@ const ComponentsPage: React.FC<ComponentsPageProps> = ({
                 Cerrar sesión
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showNewComponentModal && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-6 py-10">
+          <div className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-6 space-y-2">
+              <h2 className="text-xl font-semibold text-slate-900">Nuevo componente</h2>
+              <p className="text-sm text-slate-500">
+                Añade una referencia visual o pega el código que acompañará a este componente reutilizable.
+              </p>
+            </header>
+
+            <form onSubmit={handleSubmitNewComponent} className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Nombre del componente
+                  <input
+                    type="text"
+                    required
+                    value={newComponentForm.name}
+                    onChange={handleNewComponentInputChange('name')}
+                    placeholder="Ej. Header principal"
+                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Categoría
+                  <select
+                    value={newComponentForm.category}
+                    onChange={handleNewComponentInputChange('category')}
+                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  >
+                    {COMPONENT_CATEGORIES.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label className="flex flex-col gap-2 text-sm text-slate-600">
+                Descripción
+                <textarea
+                  value={newComponentForm.description}
+                  onChange={handleNewComponentInputChange('description')}
+                  placeholder="Contexto o notas rápidas sobre el componente."
+                  className="min-h-[80px] rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </label>
+
+              <div className="flex flex-col gap-3 rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5">
+                <span className="text-sm font-semibold text-slate-600">Imagen de referencia</span>
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500 transition hover:border-blue-300 hover:text-blue-600">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+                      +
+                    </span>
+                    <span className="font-semibold">Seleccionar archivo</span>
+                    <span className="text-xs text-slate-400">PNG, JPG o SVG</span>
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleNewComponentFileChange} className="hidden" />
+                </label>
+                {newComponentFileName && <p className="text-xs text-slate-400">Archivo seleccionado: {newComponentFileName}</p>}
+                {newComponentPreview ? (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                    <img src={newComponentPreview} alt="Vista previa" className="h-40 w-full rounded-xl object-contain" />
+                  </div>
+                ) : (
+                  <p className="text-xs text-rose-400">
+                    Sube una imagen para poder guardar este recurso en la biblioteca.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleCloseNewComponentModal}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newComponentPreview}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition ${
+                    newComponentPreview ? 'bg-blue-600 hover:bg-blue-500' : 'cursor-not-allowed bg-slate-300 text-slate-100 shadow-none'
+                  }`}
+                >
+                  Guardar componente
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showExportModal && exportComponent && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-6 py-10">
+          <div className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-6 flex flex-col gap-3 border-b border-slate-200 pb-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Exportar componente</p>
+                  <h2 className="text-xl font-semibold text-slate-900">{exportComponent.name}</h2>
+                </div>
+                <span className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  {CATEGORY_LABEL[exportComponent.category]}
+                </span>
+              </div>
+              <p className="text-sm text-slate-500">
+                Elige cómo compartir este recurso con otros proyectos. Puedes adjuntar metadatos para mantener el contexto y la
+                documentación.
+              </p>
+            </header>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-start">
+              <div className="space-y-5">
+                <section className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
+                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                    Detalles de exportación
+                  </span>
+                  <div className="space-y-4 text-sm text-slate-500">
+                    {(() => {
+                      const supportsSvg = exportComponent.preview.toLowerCase().endsWith('.svg');
+                      return (
+                        <>
+                          <p>Elige el formato en el que quieres descargar este recurso visual.</p>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleExportFormatToggle('png')}
+                              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                                exportOptions.format === 'png'
+                                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                                  : 'border border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                              }`}
+                            >
+                              PNG optimizado
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleExportFormatToggle('svg')}
+                              disabled={!supportsSvg}
+                              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                                exportOptions.format === 'svg'
+                                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
+                                  : 'border border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                              } ${!supportsSvg ? 'cursor-not-allowed opacity-60 hover:border-slate-200 hover:text-slate-500' : ''}`}
+                            >
+                              SVG original
+                            </button>
+                          </div>
+                          {!supportsSvg && (
+                            <p className="text-xs text-rose-400">Esta imagen no dispone de versión vectorial, solo PNG.</p>
+                          )}
+                          <ul className="space-y-2 text-xs text-slate-400">
+                            <li>• PNG mantiene la imagen rasterizada y transparente cuando sea posible.</li>
+                            <li>• SVG conserva la edición vectorial (disponible solo si el recurso es vectorial).</li>
+                          </ul>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </section>
+
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={exportOptions.includeMetadata}
+                    onChange={handleExportMetadataToggle}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  Incluir metadatos (nombre, descripción y categoría)
+                </label>
+
+                <section className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-xs text-slate-500">
+                  <p className="font-semibold uppercase tracking-[0.3em] text-slate-400">Resumen</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Exportarás este recurso como imagen{' '}
+                    <span className="font-semibold text-slate-700">{exportOptions.format.toUpperCase()}</span>{' '}
+                    {exportOptions.includeMetadata ? 'con un archivo de metadatos adicional.' : 'sin información adicional.'}
+                  </p>
+                </section>
+              </div>
+
+              <aside className="space-y-4 rounded-3xl border border-slate-200 bg-white px-4 py-4">
+                <h3 className="text-sm font-semibold text-slate-700">Vista previa</h3>
+                <p className="text-xs text-slate-400">Revisa la referencia que acompañará al archivo exportado.</p>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <img src={exportComponent.preview} alt={exportComponent.name} className="h-40 w-full rounded-xl object-contain" />
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-400">
+                  Última actualización: <span className="font-semibold text-slate-500">{exportComponent.updatedAt}</span>
+                </div>
+              </aside>
+            </div>
+
+            <footer className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={handleCloseExportModal}
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteExport}
+                className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
+              >
+                Exportar ahora
+              </button>
+            </footer>
           </div>
         </div>
       )}

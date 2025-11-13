@@ -11,6 +11,8 @@ import BacklogsPage from './components/BacklogsPage/BacklogsPage';
 import SettingsPage from './components/SettingsPage/SettingsPage';
 import ComponentsPage from './components/ComponentsPage/ComponentsPage';
 import RepositoryPage from './components/RepositoryPage/RepositoryPage';
+import ReportsPage from './components/ReportsPage/ReportsPage';
+import IssuesPage from './components/IssuesPage/IssuesPage';
 import { HeaderNotification } from './components/Header/Header';
 
 const App: React.FC = () => {
@@ -26,6 +28,8 @@ const App: React.FC = () => {
     | 'settings'
     | 'components'
     | 'repository'
+    | 'reports'
+    | 'issues'
   >('login');
   const [selectionId, setSelectionId] = useState<string>('my-tasks');
   const [pendingBoardTask, setPendingBoardTask] = useState<
@@ -117,6 +121,14 @@ const App: React.FC = () => {
           setSelectionId(project.id);
           setView('repository');
         }}
+        onOpenReports={(project) => {
+          setSelectionId(project.id);
+          setView('reports');
+        }}
+        onOpenIssues={(project) => {
+          setSelectionId(project.id);
+          setView('issues');
+        }}
       />
     );
   }
@@ -170,7 +182,7 @@ const App: React.FC = () => {
         project={selectedProject}
         projects={projects}
         selectedId={selectionId}
-        onSelect={(projectId) => {
+        onSelect={(projectId: string) => {
           setSelectionId(projectId);
           setView('main');
         }}
@@ -250,6 +262,44 @@ const App: React.FC = () => {
         onProfileClick={() => setView('profile')}
         onLogout={() => setView('login')}
         headerNotifications={notifications}
+        currentUser={{ name: 'María Sánchez', role: 'product-owner' }}
+      />
+    );
+  }
+
+  if (view === 'reports') {
+    return (
+      <ReportsPage
+        project={selectedProject}
+        projects={projects}
+        selectedId={selectionId}
+        onSelect={(projectId) => {
+          setSelectionId(projectId);
+          setView('main');
+        }}
+        onBack={() => setView('main')}
+        onProfileClick={() => setView('profile')}
+        onLogout={() => setView('login')}
+        headerNotifications={notifications}
+      />
+    );
+  }
+
+  if (view === 'issues') {
+    return (
+      <IssuesPage
+        project={selectedProject}
+        projects={projects}
+        selectedId={selectionId}
+        onSelect={(projectId) => {
+          setSelectionId(projectId);
+          setView('main');
+        }}
+        onBack={() => setView('main')}
+        onProfileClick={() => setView('profile')}
+        onLogout={() => setView('login')}
+        headerNotifications={notifications}
+        currentUser={{ name: 'María Sánchez', role: 'product-owner' }}
       />
     );
   }
