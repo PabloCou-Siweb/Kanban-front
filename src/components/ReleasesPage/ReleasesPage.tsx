@@ -236,6 +236,15 @@ type ReleasesPageProps = {
   onProfileClick?: () => void;
   onLogout?: () => void;
   headerNotifications?: HeaderProps['notifications'];
+  currentUser?: {
+    name: string;
+    role: 'admin' | 'product-owner' | 'employee';
+  };
+};
+
+const CURRENT_USER_FALLBACK = {
+  name: 'María Sánchez',
+  role: 'employee' as const,
 };
 
 const ReleasesPage: React.FC<ReleasesPageProps> = ({
@@ -247,6 +256,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   onProfileClick,
   onLogout,
   headerNotifications,
+  currentUser = CURRENT_USER_FALLBACK,
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
@@ -276,8 +286,10 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   });
 
   const projectList = React.useMemo(() => projects ?? DEFAULT_PROJECTS, [projects]);
+  const canManageReleases = currentUser.role === 'admin' || currentUser.role === 'product-owner';
 
   const handleOpenNewReleaseModal = () => {
+    if (!canManageReleases) return;
     setEditingReleaseIndex(null);
     setReleaseForm({
       version: '',
@@ -291,6 +303,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleEditRelease = (index: number) => {
+    if (!canManageReleases) return;
     const release = releaseRows[index];
     setEditingReleaseIndex(index);
     setReleaseForm({
@@ -309,6 +322,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleReleaseFieldChange = (field: keyof ReleaseFormState, value: string | ReleaseStatus) => {
+    if (!canManageReleases) return;
     setReleaseForm((prev) => ({
       ...prev,
       [field]: value,
@@ -318,6 +332,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
 
   const handleSubmitRelease = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!canManageReleases) return;
     const payload: ReleaseRow = {
       version: releaseForm.version.trim() || 'Nueva versión',
       status: releaseForm.status,
@@ -337,10 +352,12 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleDeleteRelease = (index: number) => {
+    if (!canManageReleases) return;
     setReleaseRows((prev) => prev.filter((_, rowIndex) => rowIndex !== index));
   };
 
   const handleOpenNewTimelineModal = () => {
+    if (!canManageReleases) return;
     setEditingTimelineIndex(null);
     setTimelineForm({
       label: '',
@@ -353,6 +370,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleEditTimeline = (index: number) => {
+    if (!canManageReleases) return;
     const item = timelineItems[index];
     setEditingTimelineIndex(index);
     setTimelineForm({
@@ -371,6 +389,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleTimelineFieldChange = <K extends keyof TimelineFormState>(field: K, value: TimelineFormState[K]) => {
+    if (!canManageReleases) return;
     setTimelineForm((prev) => ({
       ...prev,
       [field]: value,
@@ -379,6 +398,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
 
   const handleSubmitTimeline = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!canManageReleases) return;
     const start = Math.max(1, Math.min(10, Number(timelineForm.start) || 1));
     const end = Math.max(start, Math.min(10, Number(timelineForm.end) || start));
 
@@ -402,6 +422,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
   };
 
   const handleDeleteTimelineItem = (index: number) => {
+    if (!canManageReleases) return;
     setTimelineItems((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   };
 
@@ -431,13 +452,15 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Proyecto</p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
               </div>
-              <button
-                type="button"
-                onClick={handleOpenNewReleaseModal}
-                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
-              >
-                Crear versión
-              </button>
+              {canManageReleases && (
+                <button
+                  type="button"
+                  onClick={handleOpenNewReleaseModal}
+                  className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
+                >
+                  Crear versión
+                </button>
+              )}
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-600">
               Consulta todas las iteraciones planeadas, su avance y fechas relevantes. Utiliza la tabla y la vista de timeline
@@ -480,7 +503,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                     <th className="px-3 py-3 font-semibold">Inicio</th>
                     <th className="px-3 py-3 font-semibold">Lanzamiento</th>
                     <th className="px-3 py-3 font-semibold">Descripción</th>
-                    <th className="px-3 py-3 font-semibold">Acciones</th>
+                    {canManageReleases && <th className="px-3 py-3 font-semibold">Acciones</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
@@ -497,24 +520,26 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                       <td className="px-3 py-4 text-xs text-slate-500">{formatDisplayDate(row.startDate)}</td>
                       <td className="px-3 py-4 text-xs text-slate-500">{formatDisplayDate(row.releaseDate)}</td>
                       <td className="px-3 py-4 text-xs text-slate-500">{row.description || 'Sin descripción'}</td>
-                      <td className="px-3 py-4 text-xs">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditRelease(index)}
-                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRelease(index)}
-                            className="inline-flex items-center gap-2 rounded-full border border-rose-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-rose-500 transition hover:border-rose-300 hover:text-rose-600"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
+                      {canManageReleases && (
+                        <td className="px-3 py-4 text-xs">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditRelease(index)}
+                              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRelease(index)}
+                              className="inline-flex items-center gap-2 rounded-full border border-rose-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-rose-500 transition hover:border-rose-300 hover:text-rose-600"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -542,13 +567,15 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                 <span className="inline-flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" /> Completado
                 </span>
-                <button
-                  type="button"
-                  onClick={handleOpenNewTimelineModal}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-                >
-                  Añadir elemento
-                </button>
+                {canManageReleases && (
+                  <button
+                    type="button"
+                    onClick={handleOpenNewTimelineModal}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
+                  >
+                    Añadir elemento
+                  </button>
+                )}
               </div>
             </header>
 
@@ -574,22 +601,24 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                       <div className="flex flex-col gap-2 text-xs text-slate-600">
                         <span className="font-semibold text-slate-800">{item.label}</span>
                         <span className="text-[11px] text-slate-400">{item.type === 'release' ? 'Release' : 'Sprint'} · {item.status}</span>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditTimeline(index)}
-                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTimelineItem(index)}
-                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 transition hover:border-rose-300 hover:text-rose-600"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
+                        {canManageReleases && (
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditTimeline(index)}
+                              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTimelineItem(index)}
+                              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 transition hover:border-rose-300 hover:text-rose-600"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <div className="grid grid-cols-10 gap-2 py-1">
                         <div
@@ -639,7 +668,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
         </div>
       )}
 
-      {showReleaseModal && (
+      {showReleaseModal && canManageReleases && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-6 py-10">
           <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
             <header className="mb-4 flex items-center justify-between">
@@ -735,7 +764,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
         </div>
       )}
 
-      {showTimelineModal && (
+      {showTimelineModal && canManageReleases && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-6 py-10">
           <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
             <header className="mb-4 flex items-center justify-between">

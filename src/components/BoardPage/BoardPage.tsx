@@ -239,11 +239,13 @@ const BoardPage: React.FC<BoardPageProps> = ({
   const [labelsMap, setLabelsMap] = React.useState<Record<string, string[]>>({});
   const [newLabel, setNewLabel] = React.useState('');
   const [priorityFilter, setPriorityFilter] = React.useState<'all' | BoardTaskItem['priority']>('all');
+  const [assigneeFilter, setAssigneeFilter] = React.useState<'all' | string>('all');
   const [showFilters, setShowFilters] = React.useState(false);
-  const [openFilterSection, setOpenFilterSection] = React.useState<'priority' | null>(null);
+  const [openFilterSection, setOpenFilterSection] = React.useState<'priority' | 'assignee' | null>(null);
 
   const handleResetFilters = () => {
     setPriorityFilter('all');
+    setAssigneeFilter('all');
     setOpenFilterSection(null);
   };
 
@@ -307,6 +309,50 @@ const BoardPage: React.FC<BoardPageProps> = ({
                   }`}
                 >
                   {priority}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {renderDropdownSection(
+            'Asignado a',
+            openFilterSection === 'assignee',
+            () => setOpenFilterSection((prev) => (prev === 'assignee' ? null : 'assignee')),
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setAssigneeFilter('all')}
+                className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  assigneeFilter === 'all'
+                    ? 'border-blue-300 bg-blue-50 text-blue-600'
+                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => setAssigneeFilter('Sin asignar')}
+                className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  assigneeFilter === 'Sin asignar'
+                    ? 'border-blue-300 bg-blue-50 text-blue-600'
+                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                }`}
+              >
+                Sin asignar
+              </button>
+              {BOARD_MEMBERS.filter((member) => member.display !== 'Sin asignar').map((member) => (
+                <button
+                  key={member.id}
+                  type="button"
+                  onClick={() => setAssigneeFilter(member.display)}
+                  className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                    assigneeFilter === member.display
+                      ? 'border-blue-300 bg-blue-50 text-blue-600'
+                      : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                  }`}
+                >
+                  {member.display}
                 </button>
               ))}
             </div>
@@ -852,10 +898,15 @@ const BoardPage: React.FC<BoardPageProps> = ({
                 <div className="grid h-full min-w-[960px] grid-cols-1 gap-5 px-6 py-6 md:grid-cols-2 xl:grid-cols-4">
                   {BOARD_COLUMNS.map((column) => {
                     const columnAllTasks = boardTasks[column.id] ?? [];
-                    const filteredTasks = columnAllTasks.filter(
-                      (task) => priorityFilter === 'all' || task.priority === priorityFilter
-                    );
-                    const isFiltering = priorityFilter !== 'all';
+                    const filteredTasks = columnAllTasks.filter((task) => {
+                      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+                      const matchesAssignee =
+                        assigneeFilter === 'all' ||
+                        (assigneeFilter === 'Sin asignar' && task.owner === 'Sin asignar') ||
+                        task.owner === assigneeFilter;
+                      return matchesPriority && matchesAssignee;
+                    });
+                    const isFiltering = priorityFilter !== 'all' || assigneeFilter !== 'all';
                     return (
                       <div
                         key={column.id}

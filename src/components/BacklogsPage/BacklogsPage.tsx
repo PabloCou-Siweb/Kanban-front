@@ -28,6 +28,12 @@ type BacklogActivityGroup = {
   entries: BacklogEntry[];
 };
 
+const normalizeText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
 const ACTION_LABELS: Record<BacklogActionType, string> = {
   'create-task': 'Creó tarea',
   'assign-task': 'Asignó tarea',
@@ -184,18 +190,27 @@ const BacklogsPage: React.FC<BacklogsPageProps> = ({
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [activeFilter, setActiveFilter] = React.useState<'all' | BacklogActionType>('all');
+  const [authorSearch, setAuthorSearch] = React.useState('');
 
   const projectList = React.useMemo(() => projects ?? DEFAULT_PROJECTS, [projects]);
 
   const filteredActivity = React.useMemo(() => {
-    if (activeFilter === 'all') {
-      return BACKLOG_ACTIVITY;
-    }
-    return BACKLOG_ACTIVITY.map((group) => ({
-      date: group.date,
-      entries: group.entries.filter((entry) => entry.action === activeFilter),
-    })).filter((group) => group.entries.length > 0);
-  }, [activeFilter]);
+    const normalizedSearch = normalizeText(authorSearch.trim());
+
+    return BACKLOG_ACTIVITY.map((group) => {
+      const entries = group.entries.filter((entry) => {
+        const matchesAction = activeFilter === 'all' || entry.action === activeFilter;
+        const matchesAuthor =
+          normalizedSearch === '' || normalizeText(entry.author).includes(normalizedSearch);
+        return matchesAction && matchesAuthor;
+      });
+
+      return {
+        date: group.date,
+        entries,
+      };
+    }).filter((group) => group.entries.length > 0);
+  }, [activeFilter, authorSearch]);
 
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
@@ -224,12 +239,6 @@ const BacklogsPage: React.FC<BacklogsPageProps> = ({
                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
               </div>
               <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 font-semibold uppercase tracking-wide">
-                  Cambios registrados · 30 días
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-semibold uppercase tracking-wide text-blue-600">
-                  Acciones clave: crear, asignar, actualizar
-                </span>
               </div>
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-600">
@@ -241,24 +250,36 @@ const BacklogsPage: React.FC<BacklogsPageProps> = ({
           <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-lg shadow-slate-900/5">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Filtrar actividad</h3>
-              <div className="flex flex-wrap gap-2">
-                {ACTION_FILTERS.map((filter) => {
-                  const isActive = filter.id === activeFilter;
-                  return (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      onClick={() => setActiveFilter(filter.id)}
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
-                        isActive
-                          ? 'border-blue-300 bg-blue-50 text-blue-600'
-                          : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                <div className="flex flex-wrap gap-2">
+                  {ACTION_FILTERS.map((filter) => {
+                    const isActive = filter.id === activeFilter;
+                    return (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        onClick={() => setActiveFilter(filter.id)}
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
+                          isActive
+                            ? 'border-blue-300 bg-blue-50 text-blue-600'
+                            : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-500">
+                  <span className="font-semibold uppercase tracking-wide text-slate-400">Autor</span>
+                  <input
+                    type="search"
+                    value={authorSearch}
+                    onChange={(event) => setAuthorSearch(event.target.value)}
+                    placeholder="Buscar por nombre..."
+                    className="w-36 bg-transparent text-xs text-slate-600 placeholder:text-slate-400 focus:outline-none"
+                  />
+                </label>
               </div>
             </div>
 

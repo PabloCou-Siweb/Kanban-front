@@ -224,9 +224,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Miembros del proyecto</h3>
                   <p className="mt-1 text-xs text-slate-500">Gestiona acceso, roles y actividad reciente.</p>
                 </div>
-                <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
-                  Historial de cambios habilitado
-                </div>
               </header>
 
               <div className="flex flex-col gap-4">
@@ -369,54 +366,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             </section>
           </div>
 
-          <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 text-xs text-slate-600 shadow-lg shadow-slate-900/5">
-            <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">Historial de cambios sensibles</h3>
-                <p className="text-xs text-slate-500">
-                  Lista de eventos donde se modificaron roles, accesos o configuraciones globales.
-                </p>
-              </div>
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-              >
-                Exportar log
-              </button>
-            </header>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {[
-                {
-                  title: 'Cambio de rol',
-                  detail: 'Carlos Ortega ascendido a Maintainer',
-                  author: 'María Sánchez',
-                  time: 'Hace 1 día',
-                },
-                {
-                  title: 'Nuevo integrante',
-                  detail: 'Se invitó a Daniel Pérez como Viewer',
-                  author: 'Ana Rodríguez',
-                  time: 'Hace 3 días',
-                },
-                {
-                  title: 'Actualización de permisos',
-                  detail: 'Se habilitó edición de estados para Contributors',
-                  author: 'María Sánchez',
-                  time: 'Hace 1 semana',
-                },
-              ].map((log) => (
-                <article
-                  key={`${log.title}-${log.detail}`}
-                  className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{log.title}</span>
-                  <span className="text-sm font-semibold text-slate-900">{log.detail}</span>
-                  <span className="text-xs text-slate-500">{log.author} · {log.time}</span>
-                </article>
-              ))}
-            </div>
-          </section>
         </main>
       </div>
 

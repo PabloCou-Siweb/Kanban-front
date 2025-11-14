@@ -190,6 +190,7 @@ const App: React.FC = () => {
         onProfileClick={() => setView('profile')}
         onLogout={() => setView('login')}
         headerNotifications={notifications}
+        currentUser={{ name: 'María Sánchez', role: 'admin' }}
       />
     );
   }
@@ -262,7 +263,7 @@ const App: React.FC = () => {
         onProfileClick={() => setView('profile')}
         onLogout={() => setView('login')}
         headerNotifications={notifications}
-        currentUser={{ name: 'María Sánchez', role: 'product-owner' }}
+        currentUser={{ name: 'María Sánchez', role: 'admin' }}
       />
     );
   }
@@ -299,7 +300,7 @@ const App: React.FC = () => {
         onProfileClick={() => setView('profile')}
         onLogout={() => setView('login')}
         headerNotifications={notifications}
-        currentUser={{ name: 'María Sánchez', role: 'product-owner' }}
+        currentUser={{ name: 'María Sánchez', role: 'admin' }}
       />
     );
   }
