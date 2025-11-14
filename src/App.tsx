@@ -227,6 +227,7 @@ const App: React.FC = () => {
         onProfileClick={() => setView('profile')}
         onLogout={() => setView('login')}
         headerNotifications={notifications}
+        currentUser={{ name: 'María Sánchez', role: 'admin' }}
       />
     );
   }

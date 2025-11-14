@@ -1,193 +1,22 @@
 import React from 'react';
 import Sidebar, { SidebarProject, DEFAULT_PROJECTS } from '../Sidebar/Sidebar';
 import Header, { HeaderProps } from '../Header/Header';
-
-export const BOARD_COLUMNS = [
-  {
-    id: 'pending',
-    title: 'Pendiente',
-    accent: 'border-amber-100 bg-white',
-    headerAccent: 'bg-amber-500 text-white',
-    headerTag: 'bg-amber-50 text-amber-700',
-  },
-  {
-    id: 'in-progress',
-    title: 'En progreso',
-    accent: 'border-blue-100 bg-white',
-    headerAccent: 'bg-blue-500 text-white',
-    headerTag: 'bg-blue-50 text-blue-700',
-  },
-  {
-    id: 'review',
-    title: 'En revisión',
-    accent: 'border-purple-100 bg-white',
-    headerAccent: 'bg-purple-500 text-white',
-    headerTag: 'bg-purple-50 text-purple-700',
-  },
-  {
-    id: 'done',
-    title: 'Completado',
-    accent: 'border-emerald-100 bg-white',
-    headerAccent: 'bg-emerald-500 text-white',
-    headerTag: 'bg-emerald-50 text-emerald-700',
-  },
-];
-
-export const BOARD_TASKS: Record<string, Array<{
-  id: string;
-  title: string;
-  description: string;
-  owner: string;
-  avatar: string;
-  due: string;
-  status: 'Pendiente' | 'En progreso' | 'En revisión' | 'Completado';
-  priority: 'Alta' | 'Media' | 'Baja';
-  createdAt: string;
-  updatedAt: string;
-}>> = {
-  pending: [
-    {
-      id: 'KB-301',
-      title: 'Mapa de stakeholders',
-      description: 'Identificar decisores y revisores clave para el go-live.',
-      owner: 'María S.',
-      avatar: 'MS',
-      due: 'Sin fecha',
-      status: 'Pendiente',
-      priority: 'Media',
-      createdAt: '02 Abr 2025',
-      updatedAt: '05 Abr 2025',
-    },
-    {
-      id: 'KB-305',
-      title: 'Auditoría accesibilidad',
-      description: 'Revisión AA para flujos críticos de tableros.',
-      owner: 'Ana R.',
-      avatar: 'AR',
-      due: '18 Abr',
-      status: 'Pendiente',
-      priority: 'Alta',
-      createdAt: '04 Abr 2025',
-      updatedAt: '04 Abr 2025',
-    },
-  ],
-  'in-progress': [
-    {
-      id: 'KB-298',
-      title: 'Sincronización con calendario',
-      description: 'Agregar exportación de tareas a Google Calendar.',
-      owner: 'Carlos O.',
-      avatar: 'CO',
-      due: '12 Abr',
-      status: 'En progreso',
-      priority: 'Alta',
-      createdAt: '30 Mar 2025',
-      updatedAt: '08 Abr 2025',
-    },
-    {
-      id: 'KB-303',
-      title: 'Componentes de tablero',
-      description: 'Refactorizar drag & drop y estados visuales.',
-      owner: 'Daniel P.',
-      avatar: 'DP',
-      due: 'Hoy',
-      status: 'En progreso',
-      priority: 'Media',
-      createdAt: '03 Abr 2025',
-      updatedAt: '09 Abr 2025',
-    },
-  ],
-  review: [
-    {
-      id: 'KB-287',
-      title: 'Validación permisos avanzados',
-      description: 'QA de roles jerárquicos y acceso a proyectos.',
-      owner: 'María S.',
-      avatar: 'MS',
-      due: '11 Abr',
-      status: 'En revisión',
-      priority: 'Alta',
-      createdAt: '28 Mar 2025',
-      updatedAt: '08 Abr 2025',
-    },
-  ],
-  done: [
-    {
-      id: 'KB-280',
-      title: 'Template de retrospectivas',
-      description: 'Diseñar modelo reutilizable para sesiones retro.',
-      owner: 'Laura M.',
-      avatar: 'LM',
-      due: '08 Abr',
-      status: 'Completado',
-      priority: 'Media',
-      createdAt: '20 Mar 2025',
-      updatedAt: '08 Abr 2025',
-    },
-    {
-      id: 'KB-282',
-      title: 'Automatización de reportes',
-      description: 'Enviar métricas semanales a stakeholders automáticamente.',
-      owner: 'Carlos O.',
-      avatar: 'CO',
-      due: '09 Abr',
-      status: 'Completado',
-      priority: 'Alta',
-      createdAt: '22 Mar 2025',
-      updatedAt: '09 Abr 2025',
-    },
-  ],
-};
-
-export type BoardTaskItem = (typeof BOARD_TASKS)['pending'][number];
-
-const BOARD_MEMBERS = [
-  { id: 'ms', name: 'María Sánchez', display: 'María S.', initials: 'MS' },
-  { id: 'ar', name: 'Ana Rodríguez', display: 'Ana R.', initials: 'AR' },
-  { id: 'co', name: 'Carlos Ortega', display: 'Carlos O.', initials: 'CO' },
-  { id: 'dp', name: 'Daniel Pérez', display: 'Daniel P.', initials: 'DP' },
-  { id: 'lm', name: 'Laura Martínez', display: 'Laura M.', initials: 'LM' },
-  { id: 'na', name: 'Sin asignar', display: 'Sin asignar', initials: 'NA' },
-];
-
-const PRIORITY_OPTIONS: BoardTaskItem['priority'][] = ['Alta', 'Media', 'Baja'];
-
-const PRIORITY_BADGE_STYLES: Record<BoardTaskItem['priority'], string> = {
-  Alta: 'bg-rose-100 text-rose-700 border border-rose-200',
-  Media: 'bg-amber-100 text-amber-700 border border-amber-200',
-  Baja: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-};
-
-const STATUS_BADGE_STYLES: Record<BoardTaskItem['status'], string> = {
-  Pendiente: 'bg-amber-100 text-amber-700',
-  'En progreso': 'bg-blue-100 text-blue-700',
-  'En revisión': 'bg-purple-100 text-purple-700',
-  Completado: 'bg-emerald-100 text-emerald-700',
-};
-
-const LABEL_PRESETS = [
-  {
-    id: 'disciplinas',
-    title: 'Disciplinas',
-    labels: ['Backend', 'Frontend', 'Diseño', 'Contenido', 'Producto', 'Automatización'],
-  },
-  {
-    id: 'estatus',
-    title: 'Estado operativo',
-    labels: [
-      'Pendiente de aprobación',
-      'Esperando feedback',
-      'En implementación',
-      'Listo para producción',
-      'Bloqueado por dependencia',
-    ],
-  },
-  {
-    id: 'areas',
-    title: 'Áreas de trabajo',
-    labels: ['Desarrollo', 'Diseño', 'Integración', 'Testing', 'Documentación', 'Propuesta', 'Marketing'],
-  },
-];
+import BoardFilters from './BoardFilters';
+import BoardColumn from './BoardColumn';
+import TaskDetailOverlay from './TaskDetailOverlay';
+import AttachmentModal from './AttachmentModal';
+import CommentsModal from './CommentsModal';
+import LabelsModal from './LabelsModal';
+import {
+  BOARD_COLUMNS,
+  BOARD_TASKS,
+  BOARD_MEMBERS,
+  PRIORITY_OPTIONS,
+  PRIORITY_BADGE_STYLES,
+  STATUS_BADGE_STYLES,
+  LABEL_PRESETS,
+} from './boardData';
+import { BoardTaskItem } from './types';
 
 type BoardPageProps = {
   project?: SidebarProject | null;
@@ -240,137 +69,11 @@ const BoardPage: React.FC<BoardPageProps> = ({
   const [newLabel, setNewLabel] = React.useState('');
   const [priorityFilter, setPriorityFilter] = React.useState<'all' | BoardTaskItem['priority']>('all');
   const [assigneeFilter, setAssigneeFilter] = React.useState<'all' | string>('all');
-  const [showFilters, setShowFilters] = React.useState(false);
-  const [openFilterSection, setOpenFilterSection] = React.useState<'priority' | 'assignee' | null>(null);
 
   const handleResetFilters = () => {
     setPriorityFilter('all');
     setAssigneeFilter('all');
-    setOpenFilterSection(null);
   };
-
-  const renderDropdownSection = (
-    title: string,
-    isOpen: boolean,
-    onToggle: () => void,
-    content: React.ReactNode
-  ) => (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
-      >
-        <span>{title}</span>
-        <span className="text-[11px] text-slate-400">{isOpen ? '▲' : '▼'}</span>
-      </button>
-      {isOpen && <div className="border-t border-slate-200 px-3 py-3 text-xs text-slate-500">{content}</div>}
-    </div>
-  );
-
-  const filterDropdown = (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setShowFilters((prev) => !prev)}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-      >
-        <span>Filtros</span>
-        <span className="text-[11px] text-slate-400">{showFilters ? '▲' : '▼'}</span>
-      </button>
-
-      {showFilters && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-[320px] space-y-3 rounded-3xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-xl shadow-slate-900/10">
-          {renderDropdownSection(
-            'Prioridad',
-            openFilterSection === 'priority',
-            () => setOpenFilterSection((prev) => (prev === 'priority' ? null : 'priority')),
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setPriorityFilter('all')}
-                className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                  priorityFilter === 'all'
-                    ? 'border-blue-300 bg-blue-50 text-blue-600'
-                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                }`}
-              >
-                Todas
-              </button>
-              {PRIORITY_OPTIONS.map((priority) => (
-                <button
-                  key={priority}
-                  type="button"
-                  onClick={() => setPriorityFilter(priority)}
-                  className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                    priorityFilter === priority
-                      ? 'border-blue-300 bg-blue-50 text-blue-600'
-                      : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                  }`}
-                >
-                  {priority}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {renderDropdownSection(
-            'Asignado a',
-            openFilterSection === 'assignee',
-            () => setOpenFilterSection((prev) => (prev === 'assignee' ? null : 'assignee')),
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setAssigneeFilter('all')}
-                className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                  assigneeFilter === 'all'
-                    ? 'border-blue-300 bg-blue-50 text-blue-600'
-                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                type="button"
-                onClick={() => setAssigneeFilter('Sin asignar')}
-                className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                  assigneeFilter === 'Sin asignar'
-                    ? 'border-blue-300 bg-blue-50 text-blue-600'
-                    : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                }`}
-              >
-                Sin asignar
-              </button>
-              {BOARD_MEMBERS.filter((member) => member.display !== 'Sin asignar').map((member) => (
-                <button
-                  key={member.id}
-                  type="button"
-                  onClick={() => setAssigneeFilter(member.display)}
-                  className={`flex w-full items-center justify-between rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                    assigneeFilter === member.display
-                      ? 'border-blue-300 bg-blue-50 text-blue-600'
-                      : 'border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600'
-                  }`}
-                >
-                  {member.display}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-            >
-              Limpiar filtros
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   const currentUser = React.useMemo(
     () => currentUserProp ?? { name: 'María Sánchez', initials: 'MS' },
@@ -853,6 +556,37 @@ const BoardPage: React.FC<BoardPageProps> = ({
     setTaskDraft((prev) => (prev ? { ...prev, owner: currentUser.name, avatar: currentUser.initials } : prev));
   };
 
+  const handleStartTaskEditing = () => {
+    if (!selectedTask) {
+      return;
+    }
+    setTaskDraft({ ...selectedTask });
+    setIsEditingTask(true);
+  };
+
+  const handleCancelTaskEditing = () => {
+    handleResetTaskDraft();
+    setIsEditingTask(false);
+  };
+
+  const openAttachmentsModal = () => {
+    setShowAttachModal(true);
+    setShowCommentsModal(false);
+    setShowLabelsModal(false);
+  };
+
+  const openCommentsModal = () => {
+    setShowCommentsModal(true);
+    setShowAttachModal(false);
+    setShowLabelsModal(false);
+  };
+
+  const openLabelsModal = () => {
+    setShowLabelsModal(true);
+    setShowAttachModal(false);
+    setShowCommentsModal(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
       <Sidebar
@@ -880,7 +614,13 @@ const BoardPage: React.FC<BoardPageProps> = ({
                   <h2 className="mt-2 text-3xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
                 </div>
                 <div className="flex items-center gap-3">
-                  {filterDropdown}
+                  <BoardFilters
+                    priorityFilter={priorityFilter}
+                    assigneeFilter={assigneeFilter}
+                    onPriorityChange={setPriorityFilter}
+                    onAssigneeChange={setAssigneeFilter}
+                    onReset={handleResetFilters}
+                  />
                   <button
                     type="button"
                     onClick={handleAddTask}
@@ -908,68 +648,17 @@ const BoardPage: React.FC<BoardPageProps> = ({
                     });
                     const isFiltering = priorityFilter !== 'all' || assigneeFilter !== 'all';
                     return (
-                      <div
+                      <BoardColumn
                         key={column.id}
-                        className={`flex h-full max-h-full flex-col rounded-3xl border ${column.accent} p-4 shadow-sm shadow-slate-900/5 transition hover:-translate-y-1 hover:shadow-md`}
-                        onDragOver={(event) => {
-                          event.preventDefault();
-                        }}
-                        onDrop={() => handleDrop(column.id)}
-                      >
-                        <header
-                          className={`flex items-center justify-between rounded-2xl px-4 py-3 text-xs font-semibold uppercase tracking-wide ${column.headerAccent}`}
-                        >
-                          <div className="flex flex-col">
-                            <span>{column.title}</span>
-                            <span className={`mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${column.headerTag}`}>
-                              {filteredTasks.length}
-                              {isFiltering && ` · de ${columnAllTasks.length}`}
-                              {filteredTasks.length === 1 ? ' tarea' : ' tareas'}
-                            </span>
-                          </div>
-                        </header>
-
-                        <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto pr-1">
-                          {filteredTasks.map((task) => (
-                            <article
-                              key={task.id}
-                              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm shadow-sm shadow-slate-900/5"
-                              draggable
-                              onDragStart={() => handleDragStart(column.id, task.id)}
-                              onDragEnd={handleDragEnd}
-                              onClick={() => handleOpenTask(column.id, task.id)}
-                            >
-                              <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
-                                <span>{task.id}</span>
-                                <span>{task.due}</span>
-                              </div>
-                              <div>
-                                <h4 className="text-base font-semibold text-slate-900">{task.title}</h4>
-                                <p className="mt-1 text-xs text-slate-500">{task.description}</p>
-                              </div>
-                              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
-                                <span className="inline-flex items-center gap-2">
-                                  <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-900/5 text-xs font-semibold text-slate-700">
-                                    {task.avatar}
-                                  </span>
-                                  <span className="font-medium text-slate-700">{task.owner}</span>
-                                </span>
-                                <span
-                                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${PRIORITY_BADGE_STYLES[task.priority]}`}
-                                >
-                                  {task.priority}
-                                </span>
-                              </div>
-                            </article>
-                          ))}
-
-                          {filteredTasks.length === 0 && (
-                            <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/80 px-4 py-6 text-center text-xs text-slate-400">
-                              {isFiltering ? 'Sin tarjetas con este filtro.' : 'Sin tarjetas en esta columna.'}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                        column={column}
+                        tasks={filteredTasks}
+                        totalCount={columnAllTasks.length}
+                        isFiltering={isFiltering}
+                        onDrop={handleDrop}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onOpenTask={handleOpenTask}
+                      />
                     );
                   })}
                 </div>
@@ -1011,646 +700,69 @@ const BoardPage: React.FC<BoardPageProps> = ({
       )}
 
       {selectedTask && selectedTaskColumn && taskDraft && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4 md:px-8">
-          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20">
-            <header className="flex items-start justify-between">
-              <div className="w-full pr-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Resumen de tarea</p>
-                {isEditingTask ? (
-                  <input
-                    type="text"
-                    value={taskDraft.title}
-                    onChange={(event) => handleTaskDraftChange('title', event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-2xl font-semibold text-slate-900 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                  />
-                ) : (
-                  <h3 className="mt-2 text-2xl font-semibold text-slate-900">{selectedTask.title}</h3>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {isEditingTask ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleResetTaskDraft();
-                      setIsEditingTask(false);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    Cancelar
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTaskDraft({ ...selectedTask });
-                      setIsEditingTask(true);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                  >
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100">
-                      <img src="/img/edit-icon.svg" alt="Editar" className="h-3 w-3" />
-                    </span>
-                    Editar
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleCloseTask}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                  aria-label="Cerrar detalle de tarea"
-                >
-                  ×
-                </button>
-              </div>
-            </header>
-
-            {isEditingTask ? (
-              <form
-                className="mt-5 space-y-6"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  handleSaveTaskChanges();
-                }}
-              >
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                  <label className="flex flex-col gap-2 text-sm text-slate-600">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Descripción</span>
-                    <textarea
-                      value={taskDraft.description}
-                      onChange={(event) => handleTaskDraftChange('description', event.target.value)}
-                      className="min-h-[120px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                    />
-                  </label>
-                </div>
-
-                <div className="grid gap-4 text-sm text-slate-600 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                    <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Prioridad
-                      <select
-                        value={taskDraft.priority}
-                        onChange={(event) =>
-                          handleTaskDraftChange('priority', event.target.value as BoardTaskItem['priority'])
-                        }
-                        className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                      >
-                        {PRIORITY_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                    <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Asignado a
-                      <select
-                        value={selectedMemberId}
-                        onChange={(event) => handleSelectMember(event.target.value)}
-                        className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                      >
-                        <option value="custom" disabled>
-                          Selecciona un miembro
-                        </option>
-                        {BOARD_MEMBERS.map((member) => (
-                          <option key={member.id} value={member.id}>
-                            {member.display}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                    <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Fecha límite
-                      <input
-                        type="text"
-                        value={taskDraft.due}
-                        onChange={(event) => handleTaskDraftChange('due', event.target.value)}
-                        className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {currentAttachments.length > 0 && (
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Adjuntos</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAttachModal(true);
-                          setShowCommentsModal(false);
-                          setShowLabelsModal(false);
-                        }}
-                        className="text-xs font-semibold text-blue-500 transition hover:text-blue-600"
-                      >
-                        Gestionar
-                      </button>
-                    </div>
-                    <ul className="mt-3 space-y-2 text-xs">
-                      {currentAttachments.map((file, index) => (
-                        <li
-                          key={`${selectedTask.id}-${file.name}-${index}`}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-                        >
-                          <span className="flex items-center gap-2 text-slate-600">
-                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-blue-500">
-                              📎
-                            </span>
-                            <span className="font-medium">{file.name}</span>
-                          </span>
-                          <span className="text-[11px] uppercase tracking-wide text-slate-400">{formatBytes(file.size)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={handleResetTaskDraft}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-blue-500/20"
-                  >
-                    Restablecer
-                  </button>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={!isTaskDraftDirty}
-                  >
-                    Guardar cambios
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <section className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Descripción</h4>
-                  <p className="mt-2 text-sm text-slate-600">{selectedTask.description}</p>
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Estado</span>
-                  <span
-                    className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${STATUS_BADGE_STYLES[selectedTask.status]}`}
-                  >
-                    {selectedTask.status}
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Prioridad</span>
-                  <span
-                    className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${PRIORITY_BADGE_STYLES[selectedTask.priority]}`}
-                  >
-                    {selectedTask.priority}
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Asignado a</span>
-                  <span className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-900/5 text-xs font-semibold text-slate-700">
-                      {selectedTask.avatar}
-                    </span>
-                    {selectedTask.owner}
-                  </span>
-                  {selectedTask.owner === 'Sin asignar' && (
-                    <button
-                      type="button"
-                      onClick={handleAssignToCurrentUser}
-                      className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300 hover:bg-blue-50"
-                    >
-                      Asignarme esta tarea
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Fecha límite</span>
-                  <span className="text-sm font-semibold text-slate-800">{selectedTask.due}</span>
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Fecha de creación</span>
-                  <span className="text-sm font-semibold text-slate-800">{selectedTask.createdAt}</span>
-                </div>
-
-                <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Última actualización</span>
-                  <span className="text-sm font-semibold text-slate-800">{selectedTask.updatedAt}</span>
-                </div>
-
-                {currentAttachments.length > 0 && (
-                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Adjuntos</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAttachModal(true);
-                          setShowCommentsModal(false);
-                          setShowLabelsModal(false);
-                        }}
-                        className="text-xs font-semibold text-blue-500 transition hover:text-blue-600"
-                      >
-                        Ver todos
-                      </button>
-                    </div>
-                    <ul className="mt-3 space-y-2 text-xs text-slate-600">
-                      {currentAttachments.map((file, index) => (
-                        <li
-                          key={`${selectedTask.id}-${file.name}-${index}`}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-blue-500">
-                              📎
-                            </span>
-                            <span className="font-medium text-slate-700">{file.name}</span>
-                          </span>
-                          <span className="text-[11px] uppercase tracking-wide text-slate-400">{formatBytes(file.size)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </section>
-            )}
-
-            <div className="mt-6 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAttachModal(true);
-                  setShowCommentsModal(false);
-                  setShowLabelsModal(false);
-                }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-3 font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
-                  <img src="/img/add_file-icon.svg" alt="Adjuntar" className="h-3.5 w-3.5" />
-                </span>
-                Adjuntar archivo
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCommentsModal(true);
-                  setShowLabelsModal(false);
-                }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-3 font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
-                  <img src="/img/comments-icon.svg" alt="Comentarios" className="h-3.5 w-3.5" />
-                </span>
-                Comentarios
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLabelsModal(true);
-                  setShowCommentsModal(false);
-                }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-3 py-3 font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
-              >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
-                  <img src="/img/tag-icon.svg" alt="Etiquetas" className="h-3.5 w-3.5" />
-                </span>
-                Etiquetas
-              </button>
-
-              {showLabelsModal && (
-                <div className="absolute left-0 top-full z-10 mt-2 w-48 rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Etiquetas rápidas</p>
-                  <ul className="mt-2 space-y-1">
-                    <li>
-                      <button
-                        type="button"
-                        className="w-full rounded-full border border-slate-200 px-2 py-1 text-left text-xs transition hover:border-blue-200 hover:text-blue-600"
-                      >
-                        Alta prioridad
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        className="w-full rounded-full border border-slate-200 px-2 py-1 text-left text-xs transition hover:border-amber-200 hover:text-amber-600"
-                      >
-                        Bloqueado
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        className="w-full rounded-full border border-slate-200 px-2 py-1 text-left text-xs transition hover:border-emerald-200 hover:text-emerald-600"
-                      >
-                        Listo para QA
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <TaskDetailOverlay
+          task={selectedTask}
+          taskDraft={taskDraft}
+          isEditing={isEditingTask}
+          isTaskDraftDirty={isTaskDraftDirty}
+          selectedMemberId={selectedMemberId}
+          currentAttachments={currentAttachments}
+          formatBytes={formatBytes}
+          onClose={handleCloseTask}
+          onStartEdit={handleStartTaskEditing}
+          onCancelEdit={handleCancelTaskEditing}
+          onSaveTask={handleSaveTaskChanges}
+          onResetDraft={handleResetTaskDraft}
+          onTaskDraftChange={handleTaskDraftChange}
+          onSelectMember={handleSelectMember}
+          onAssignToCurrentUser={handleAssignToCurrentUser}
+          onOpenAttachments={openAttachmentsModal}
+          onOpenComments={openCommentsModal}
+          onOpenLabels={openLabelsModal}
+        />
       )}
 
       {showAttachModal && selectedTask && selectedTaskColumn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 md:px-8">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20">
-            <header className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Adjuntar archivos</p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">{selectedTask.title}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAttachModal(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                aria-label="Cerrar adjuntos"
-              >
-                ×
-              </button>
-            </header>
-
-            <section className="mt-4 space-y-5">
-              <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-6 text-center text-sm text-slate-500">
-                <p className="font-semibold text-slate-700">Sube archivos relevantes a esta tarea</p>
-                <p className="mt-1 text-xs text-slate-400">Formatos permitidos: PDF, JPG, PNG. Tamaño máximo 25 MB por archivo.</p>
-
-                <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-blue-500 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-600">
-                  <input
-                    type="file"
-                    className="hidden"
-                    multiple
-                    onChange={(event) => {
-                      if (event.target.files) {
-                        handleUploadFiles(event.target.files);
-                        event.target.value = '';
-                      }
-                    }}
-                  />
-                  Seleccionar archivos
-                </label>
-              </div>
-
-              <div className="space-y-3">
-                {(() => {
-                  const key = `${selectedTask.id}-${selectedTaskColumn}`;
-                  const list = attachments[key] ?? [];
-                  if (list.length === 0) {
-                    return (
-                      <p className="text-xs text-slate-500">
-                        Aún no hay archivos adjuntos. Añade recursos para compartir contexto con tu equipo.
-                      </p>
-                    );
-                  }
-
-                  return (
-                    <ul className="space-y-2 text-xs text-slate-600">
-                      {list.map((file, index) => (
-                        <li
-                          key={`${selectedTask.id}-${file.name}-${index}`}
-                          className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                              <img src="/img/add_file-icon.svg" alt="Archivo" className="h-4 w-4" />
-                            </span>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-semibold text-slate-800">{file.name}</span>
-                              <span className="text-xs text-slate-400">{formatBytes(file.size)}</span>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveAttachment(selectedTask.id, selectedTaskColumn, index)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 text-xs font-semibold text-slate-400 transition hover:border-rose-200 hover:text-rose-600"
-                            aria-label="Eliminar archivo adjunto"
-                          >
-                            ×
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  );
-                })()}
-              </div>
-            </section>
-
-            <div className="mt-6 h-4" />
-          </div>
-        </div>
+        <AttachmentModal
+          task={selectedTask}
+          columnId={selectedTaskColumn}
+          attachments={attachments[`${selectedTask.id}-${selectedTaskColumn}`] ?? []}
+          formatBytes={formatBytes}
+          onClose={() => setShowAttachModal(false)}
+          onUploadFiles={handleUploadFiles}
+          onRemoveAttachment={handleRemoveAttachment}
+        />
       )}
 
       {showCommentsModal && selectedTask && selectedTaskColumn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 md:px-8">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20">
-            <header className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Comentarios</p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">{selectedTask.title}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCommentsModal(false)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                aria-label="Cerrar comentarios"
-              >
-                ×
-              </button>
-            </header>
-
-            <section className="mt-4 space-y-4">
-
-              <div className="space-y-3">
-                {(() => {
-                  const key = `${selectedTask.id}-${selectedTaskColumn}`;
-                  const list = comments[key] ?? [];
-                  if (list.length === 0) {
-                    return (
-                      <p className="text-xs text-slate-500">
-                        No hay comentarios todavía. Sé el primero en compartir una actualización.
-                      </p>
-                    );
-                  }
-                  return (
-                    <ul className="space-y-2 text-xs text-slate-600">
-                      {list.map((message, index) => (
-                        <li
-                          key={`${selectedTask.id}-${index}`}
-                          className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm"
-                        >
-                          <span className="flex-1 text-left">{message}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteComment(selectedTask.id, selectedTaskColumn, index)}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-xs font-semibold text-slate-400 transition hover:border-rose-200 hover:text-rose-600"
-                            aria-label="Eliminar comentario"
-                          >
-                            ×
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  );
-                })()}
-              </div>
-
-              <form
-                className="flex flex-col gap-3"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  handleAddComment();
-                }}
-              >
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-400" htmlFor="comment-input">
-                  Añadir comentario
-                </label>
-                <textarea
-                  id="comment-input"
-                  value={commentDraft}
-                  onChange={(event) => setCommentDraft(event.target.value)}
-                  placeholder="Escribe una actualización o pregunta..."
-                  className="min-h-[100px] resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 transition focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCommentDraft('')}
-                    className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    Limpiar
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-full bg-blue-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={commentDraft.trim() === ''}
-                  >
-                    Publicar
-                  </button>
-                </div>
-              </form>
-            </section>
-          </div>
-        </div>
+        <CommentsModal
+          task={selectedTask}
+          columnId={selectedTaskColumn}
+          comments={comments[`${selectedTask.id}-${selectedTaskColumn}`] ?? []}
+          commentDraft={commentDraft}
+          onClose={() => setShowCommentsModal(false)}
+          onChangeDraft={setCommentDraft}
+          onAddComment={handleAddComment}
+          onDeleteComment={handleDeleteComment}
+        />
       )}
 
       {showLabelsModal && selectedTask && selectedTaskColumn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 md:px-8">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20">
-            <header className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Etiquetas</p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">{selectedTask.title}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLabelsModal(false);
-                  setNewLabel('');
-                }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:text-blue-600"
-                aria-label="Cerrar etiquetas"
-              >
-                ×
-              </button>
-            </header>
-
-            <section className="mt-4 space-y-4 text-sm text-slate-600">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Etiquetas rápidas</h4>
-                <div className="mt-4 space-y-3">
-                  {LABEL_PRESETS.map((group) => (
-                    <div key={group.id} className="space-y-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{group.title}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {group.labels.map((label) => {
-                          const isSelected = activeLabels.some(
-                            (item) => item.toLowerCase() === label.toLowerCase()
-                          );
-                          return (
-                            <button
-                              key={label}
-                              type="button"
-                              onClick={() => handleToggleLabel(label)}
-                              aria-pressed={isSelected}
-                              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
-                                isSelected
-                                  ? 'border border-blue-300 bg-blue-50 text-blue-600 shadow-sm'
-                                  : 'border border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-600'
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-5">
-                {activeLabels.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {activeLabels.map((label) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => handleToggleLabel(label)}
-                        className="group inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300 hover:bg-blue-100"
-                      >
-                        <span>{label}</span>
-                        <span className="text-base font-semibold text-blue-400 group-hover:text-rose-500">×</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs text-slate-500">
-                    No hay etiquetas seleccionadas. Usa las etiquetas rápidas o añade una nueva.
-                  </p>
-                )}
-              </div>
-            </section>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Añadir etiqueta</h4>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="text"
-                    value={newLabel}
-                    onChange={(event) => setNewLabel(event.target.value)}
-                    placeholder="Nombre de la etiqueta"
-                    className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomLabel}
-                    className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={trimmedNewLabel === '' || isNewLabelDuplicate}
-                  >
-                    Añadir
-                  </button>
-                </div>
-                {isNewLabelDuplicate && (
-                  <p className="mt-2 text-xs text-rose-500">
-                    Esa etiqueta ya está asignada a esta tarea.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <LabelsModal
+          task={selectedTask}
+          columnId={selectedTaskColumn}
+          activeLabels={activeLabels}
+          newLabel={newLabel}
+          trimmedNewLabel={trimmedNewLabel}
+          isNewLabelDuplicate={isNewLabelDuplicate}
+          onClose={() => {
+            setShowLabelsModal(false);
+            setNewLabel('');
+          }}
+          onToggleLabel={handleToggleLabel}
+          onChangeNewLabel={setNewLabel}
+          onAddCustomLabel={handleAddCustomLabel}
+        />
       )}
     </div>
   );

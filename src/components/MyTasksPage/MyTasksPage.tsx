@@ -150,11 +150,9 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-              <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">
-                {task.projectName}
-              </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1">
+            <div className="flex flex-col gap-2 text-xs text-slate-500">
+              <span className="w-fit rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{task.projectName}</span>
+              <span className="w-fit rounded-full bg-slate-100 px-3 py-1">
                 Fecha límite: <strong className="text-slate-700">{task.dueDate}</strong>
               </span>
             </div>

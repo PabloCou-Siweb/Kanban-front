@@ -1,127 +1,31 @@
 import React from 'react';
 import Sidebar, { SidebarProject, DEFAULT_PROJECTS } from '../Sidebar/Sidebar';
 import Header, { HeaderProps } from '../Header/Header';
-import { BOARD_TASKS } from '../BoardPage/BoardPage';
-import type { BoardTaskItem } from '../BoardPage/BoardPage';
-
-type Trend = 'up' | 'down' | 'neutral';
-
-type ReportMetric = {
-  id: string;
-  label: string;
-  value: string;
-};
-
-type DistributionItem = {
-  id: string;
-  label: string;
-  value: number;
-  percentage: number;
-  colorClass: string;
-};
-
-type PerformanceItem = {
-  id: string;
-  label: string;
-  completed: number;
-  new: number;
-  pending: number;
-};
-
-type ResolutionPoint = {
-  month: string;
-  value: number;
-};
-
-type WeeklySummary = {
-  key: string;
-  start: Date;
-  newCount: number;
-  completedCount: number;
-  pendingCount: number;
-  completedDurations: number[];
-};
-
-type ColumnId = 'pending' | 'in-progress' | 'review' | 'done';
-
-type BoardTasksByColumn = Record<ColumnId, BoardTaskItem[]>;
-
-const STATUS_METADATA: Record<ColumnId, { label: string; colorClass: string }> = {
-  pending: { label: 'Pendiente', colorClass: 'bg-amber-400' },
-  'in-progress': { label: 'En progreso', colorClass: 'bg-blue-500' },
-  review: { label: 'En revisión', colorClass: 'bg-purple-500' },
-  done: { label: 'Completado', colorClass: 'bg-emerald-500' },
-};
-
-const COLUMN_ORDER: ColumnId[] = ['pending', 'in-progress', 'review', 'done'];
-
-const SPANISH_MONTHS: Record<string, number> = {
-  Ene: 0,
-  Feb: 1,
-  Mar: 2,
-  Abr: 3,
-  May: 4,
-  Jun: 5,
-  Jul: 6,
-  Ago: 7,
-  Sep: 8,
-  Oct: 9,
-  Nov: 10,
-  Dic: 11,
-};
-
-const PROJECT_TASK_SNAPSHOTS: Record<string, BoardTasksByColumn> = {
-  default: BOARD_TASKS as BoardTasksByColumn,
-  marketing: BOARD_TASKS as BoardTasksByColumn,
-  desarrollo: BOARD_TASKS as BoardTasksByColumn,
-  design: BOARD_TASKS as BoardTasksByColumn,
-  ventas: BOARD_TASKS as BoardTasksByColumn,
-};
-
-const parseSpanishDate = (value: string): Date | null => {
-  if (!value || value === 'Sin fecha') {
-    return null;
-  }
-  const [dayStr, monthAbbr, yearStr] = value.split(' ');
-  if (!dayStr || !monthAbbr || !yearStr) {
-    return null;
-  }
-
-  const monthIndex = SPANISH_MONTHS[monthAbbr];
-  if (monthIndex === undefined) {
-    return null;
-  }
-
-  const day = Number.parseInt(dayStr, 10);
-  const year = Number.parseInt(yearStr, 10);
-  if (Number.isNaN(day) || Number.isNaN(year)) {
-    return null;
-  }
-
-  const date = new Date(year, monthIndex, day);
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const getWeekStart = (date: Date): Date => {
-  const result = new Date(date);
-  const day = result.getDay();
-  const diff = (day + 6) % 7; // Monday as first day
-  result.setDate(result.getDate() - diff);
-  result.setHours(0, 0, 0, 0);
-  return result;
-};
-
-const formatWeekLabel = (date: Date): string => {
-  const formatter = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short' });
-  const formatted = formatter.format(date);
-  return `Semana del ${formatted.charAt(0).toUpperCase()}${formatted.slice(1)}`;
-};
-
-const formatMonthLabel = (date: Date): string => {
-  const formatter = new Intl.DateTimeFormat('es-ES', { month: 'short' });
-  const formatted = formatter.format(date);
-  return `${formatted.charAt(0).toUpperCase()}${formatted.slice(1)}`;
-};
+import ReportsHero from './ReportsHero';
+import MetricsGrid from './MetricsGrid';
+import DistributionSection from './DistributionSection';
+import PerformanceSection from './PerformanceSection';
+import ResolutionSection from './ResolutionSection';
+import {
+  STATUS_METADATA,
+  COLUMN_ORDER,
+  PROJECT_TASK_SNAPSHOTS,
+} from './constants';
+import type {
+  DistributionItem,
+  PerformanceItem,
+  ReportMetric,
+  ResolutionPoint,
+  WeeklySummary,
+  BoardTasksByColumn,
+  Trend,
+} from './types';
+import {
+  formatMonthLabel,
+  formatWeekLabel,
+  getWeekStart,
+  parseSpanishDate,
+} from './utils';
 
 type ReportsPageProps = {
   project?: SidebarProject | null;
@@ -483,221 +387,20 @@ const ReportsPage: React.FC<ReportsPageProps> = ({
         />
 
         <main className="flex flex-1 flex-col gap-6 overflow-hidden p-8">
-          <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-900/5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Proyecto</p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
-              </div>
+          <ReportsHero projectName={project ? project.name : 'Tablero principal'} />
 
-              <div className="flex flex-wrap gap-2 text-xs" />
-            </div>
-
-            <p className="mt-4 max-w-3xl text-sm text-slate-600">
-              Revisa el rendimiento del proyecto, tiempos de entrega, capacidad del equipo y posibles cuellos de botella. Usa
-              esta vista para anticipar riesgos y ajustar la planificación de los próximos sprints.
-            </p>
-          </section>
-
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {metrics.map((metric) => (
-              <article
-                key={metric.id}
-                className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm shadow-slate-900/10"
-              >
-                <header className="flex items-start justify-between gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">{metric.label}</span>
-                </header>
-                <p className="text-3xl font-semibold text-slate-900">{metric.value}</p>
-              </article>
-            ))}
-          </section>
+          <MetricsGrid metrics={metrics} />
 
           <section className="grid gap-6 lg:grid-cols-2">
-            <article className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-lg shadow-slate-900/5">
-              <header className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">
-                    Distribución por estado
-                  </h3>
-                  <p className="text-xs text-slate-500">Detalle de tareas activas agrupadas según su estado actual en el tablero.</p>
-                </div>
-                <span className="text-xs font-semibold text-slate-400">Últimos 30 días</span>
-              </header>
-
-              {distributionData.length > 0 && totalTasks > 0 ? (
-                <ul className="mt-6 space-y-3 text-xs text-slate-500">
-                  {distributionData.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className={`h-2 w-2 rounded-full ${item.colorClass}`} />
-                          <span className="text-sm font-semibold text-slate-800">{item.label}</span>
-                        </div>
-                        <span className="text-xs text-slate-400">
-                          {item.value} {item.value === 1 ? 'tarea' : 'tareas'} · {item.percentage}%
-                        </span>
-                      </div>
-                      <div className="mt-3 h-2 rounded-full bg-white shadow-inner shadow-slate-900/5">
-                        <div
-                          className={`h-full rounded-full ${item.colorClass}`}
-                          style={{ width: `${item.percentage}%` }}
-                        />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center text-xs text-slate-400">
-                  No hay tareas registradas en este proyecto para calcular la distribución.
-                </div>
-              )}
-            </article>
-
-            <article className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-lg shadow-slate-900/5">
-              <header className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">Rendimiento semanal</h3>
-                  <p className="text-xs text-slate-500">
-                    Tareas resueltas frente a nuevas solicitudes y pendientes de cierre.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    Resueltas
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-blue-400" />
-                    Nuevas
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-amber-400" />
-                    Pendientes
-                  </span>
-                </div>
-              </header>
-
-              {performanceRows.length > 0 ? (
-                <ul className="mt-6 space-y-3 text-xs text-slate-500">
-                  {performanceRows.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                      <div className="flex items-center justify-between text-sm font-semibold text-slate-800">
-                        <span>{item.label}</span>
-                        <span className="text-xs text-slate-400">
-                          {item.completed} / {item.new} / {item.pending}
-                        </span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-500">
-                        <div className="rounded-xl bg-white px-3 py-2 shadow-inner shadow-emerald-500/10">
-                          <span className="font-semibold text-emerald-600">{item.completed}</span>
-                          <span className="block text-[11px] uppercase tracking-wide text-slate-400">Resueltas</span>
-                        </div>
-                        <div className="rounded-xl bg-white px-3 py-2 shadow-inner shadow-blue-500/10">
-                          <span className="font-semibold text-blue-500">{item.new}</span>
-                          <span className="block text-[11px] uppercase tracking-wide text-slate-400">Nuevas</span>
-                        </div>
-                        <div className="rounded-xl bg-white px-3 py-2 shadow-inner shadow-amber-500/10">
-                          <span className="font-semibold text-amber-500">{item.pending}</span>
-                          <span className="block text-[11px] uppercase tracking-wide text-slate-400">Pendientes</span>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center text-xs text-slate-400">
-                  Aún no hay actividad semanal registrada para este proyecto.
-                </div>
-              )}
-            </article>
+            <DistributionSection items={distributionData} totalTasks={totalTasks} />
+            <PerformanceSection rows={performanceRows} />
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-lg shadow-slate-900/5">
-            <header className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">Tasa de resolución</h3>
-                <p className="text-xs text-slate-500">Tareas cerradas mes a mes en el periodo seleccionado.</p>
-              </div>
-              <span className="text-xs font-semibold text-slate-400">
-                {resolutionAverage !== null ? `Promedio · ${resolutionAverage.toFixed(1)} tareas/mes` : ''}
-              </span>
-            </header>
-
-            <div className="mt-6 rounded-3xl bg-gradient-to-b from-blue-500/10 via-slate-50 to-white p-6">
-              {resolutionTrendPoints.length >= 2 ? (
-                <svg viewBox="0 0 720 220" className="h-52 w-full">
-                  <defs>
-                    <linearGradient id="resolutionGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d={`M0,200 ${resolutionTrendPoints
-                      .map((point, index) => {
-                        const ratio =
-                          resolutionTrendPoints.length > 1
-                            ? index / (resolutionTrendPoints.length - 1)
-                            : 0;
-                        const x = ratio * 720;
-                        const y =
-                          200 - (point.value / resolutionMaxValue) * 180;
-                        return `L${x},${y}`;
-                      })
-                      .join(' ')} L720,200 Z`}
-                    fill="url(#resolutionGradient)"
-                    stroke="none"
-                  />
-                  <polyline
-                    fill="none"
-                    stroke="#3B82F6"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    points={resolutionTrendPoints
-                      .map((point, index) => {
-                        const ratio =
-                          resolutionTrendPoints.length > 1
-                            ? index / (resolutionTrendPoints.length - 1)
-                            : 0;
-                        const x = ratio * 720;
-                        const y =
-                          200 - (point.value / resolutionMaxValue) * 180;
-                        return `${x},${y}`;
-                      })
-                      .join(' ')}
-                  />
-                  {resolutionTrendPoints.map((point, index) => {
-                    const ratio =
-                      resolutionTrendPoints.length > 1
-                        ? index / (resolutionTrendPoints.length - 1)
-                        : 0;
-                    const x = ratio * 720;
-                    const y =
-                      200 - (point.value / resolutionMaxValue) * 180;
-                    return (
-                      <g key={`${point.month}-${index}`}>
-                        <circle cx={x} cy={y} r="5" fill="#2563EB" stroke="#fff" strokeWidth="2" />
-                        <text
-                          x={x}
-                          y={210}
-                          textAnchor="middle"
-                          className="fill-slate-400 text-[10px] uppercase tracking-wide"
-                        >
-                          {point.month}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              ) : (
-                <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white text-xs text-slate-400">
-                  No hay suficientes tareas completadas para generar el histórico.
-                </div>
-              )}
-            </div>
-          </section>
+          <ResolutionSection
+            points={resolutionTrendPoints}
+            resolutionAverage={resolutionAverage}
+            resolutionMaxValue={resolutionMaxValue}
+          />
         </main>
       </div>
 

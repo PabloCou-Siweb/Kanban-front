@@ -105,6 +105,15 @@ type SettingsPageProps = {
   onProfileClick?: () => void;
   onLogout?: () => void;
   headerNotifications?: HeaderProps['notifications'];
+  currentUser?: {
+    name: string;
+    role: 'admin' | 'project-owner' | 'employee';
+  };
+};
+
+const CURRENT_USER_FALLBACK = {
+  name: 'María Sánchez',
+  role: 'employee' as const,
 };
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
@@ -116,6 +125,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onProfileClick,
   onLogout,
   headerNotifications,
+  currentUser = CURRENT_USER_FALLBACK,
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
@@ -124,6 +134,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const [selectedMemberId, setSelectedMemberId] = React.useState<string | null>(
     INITIAL_MEMBERS[0]?.id ?? null
   );
+  const [showAddMemberModal, setShowAddMemberModal] = React.useState(false);
+  const [newMemberForm, setNewMemberForm] = React.useState<{
+    name: string;
+    email: string;
+    role: RoleKey;
+  }>({
+    name: '',
+    email: '',
+    role: 'employee',
+  });
 
   const projectList = React.useMemo(() => projects ?? DEFAULT_PROJECTS, [projects]);
 
@@ -136,6 +156,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       member.name.toLowerCase().includes(term) || member.email.toLowerCase().includes(term)
     );
   }, [members, searchTerm]);
+
+  const canManageMembers = currentUser.role === 'admin' || currentUser.role === 'project-owner';
 
   const selectedMember = React.useMemo(
     () => members.find((member) => member.id === selectedMemberId) ?? members[0] ?? null,
@@ -176,6 +198,33 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     });
   };
 
+  const handleSubmitNewMember = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nameTrimmed = newMemberForm.name.trim() || 'Nuevo miembro';
+    const emailTrimmed = newMemberForm.email.trim() || 'sin-correo@empresa.com';
+    const initials = nameTrimmed
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+
+    const newMember: ProjectMember = {
+      id: `user-${Date.now()}`,
+      name: nameTrimmed,
+      email: emailTrimmed,
+      initials: initials || 'NM',
+      avatarColor: 'bg-gradient-to-br from-blue-600 to-blue-500',
+      role: newMemberForm.role,
+      lastActivity: 'Hace instantes',
+    };
+
+    setMembers((prev) => [newMember, ...prev]);
+    setSelectedMemberId(newMember.id);
+    setShowAddMemberModal(false);
+    setNewMemberForm({ name: '', email: '', role: 'employee' });
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
       <Sidebar
@@ -203,12 +252,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
               </div>
               <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-                <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-semibold uppercase tracking-wide text-blue-600">
-                  Usuarios activos · {members.length}
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 font-semibold uppercase tracking-wide text-slate-500">
-                  Roles configurados · 4
-                </span>
               </div>
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-600">
@@ -224,6 +267,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Miembros del proyecto</h3>
                   <p className="mt-1 text-xs text-slate-500">Gestiona acceso, roles y actividad reciente.</p>
                 </div>
+                {canManageMembers && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddMemberModal(true)}
+                    className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
+                  >
+                    Añadir miembro
+                  </button>
+                )}
               </header>
 
               <div className="flex flex-col gap-4">
@@ -235,7 +287,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                     placeholder="Buscar por nombre o email"
                     className="flex-1 text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none"
                   />
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">{filteredMembers.length} resultados</span>
                 </div>
 
                 <div className="space-y-3">
@@ -286,9 +337,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                     <div className="flex flex-col">
                       <span className="text-base font-semibold text-slate-900">{selectedMember.name}</span>
                       <span className="text-xs text-slate-500">{selectedMember.email}</span>
-                      <span className="mt-1 inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                        Última actividad · {selectedMember.lastActivity}
-                      </span>
                     </div>
                   </>
                 ) : (
@@ -319,50 +367,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-xs text-slate-600">
-                <header className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-900">Permisos según roles</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                    Vista rápida
-                  </span>
-                </header>
-                <div className="space-y-3">
-                  {ROLES.map((role) => (
-                    <details key={role.key} className="rounded-xl border border-slate-200 bg-slate-50">
-                      <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-700">
-                        <span>{role.label}</span>
-                        <span className="text-xs text-slate-400">{role.summary}</span>
-                      </summary>
-                      <ul className="space-y-2 border-t border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
-                        {role.permissions.map((permission) => (
-                          <li key={`${role.key}-${permission.action}`} className="flex items-center justify-between gap-3">
-                            <span>{permission.action}</span>
-                            <span
-                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold ${
-                                permission.allowed
-                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600'
-                                  : 'border-slate-200 bg-white text-slate-400'
-                              }`}
-                              aria-label={permission.allowed ? 'Permitido' : 'No permitido'}
-                            >
-                              {permission.allowed ? '✓' : '×'}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleRemoveMember}
-                disabled={!selectedMember}
-                className="inline-flex w-fit items-center gap-2 rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Eliminar del proyecto
-              </button>
+              {canManageMembers && (
+                <button
+                  type="button"
+                  onClick={handleRemoveMember}
+                  disabled={!selectedMember}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Eliminar del proyecto
+                </button>
+              )}
             </section>
           </div>
 
@@ -396,6 +410,90 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 Cerrar sesión
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {showAddMemberModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-6 py-10">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Añadir miembro al proyecto</h2>
+                <p className="text-xs text-slate-500">Completa la información del nuevo colaborador.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddMemberModal(false);
+                  setNewMemberForm({ name: '', email: '', role: 'employee' });
+                }}
+                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 transition hover:border-slate-300 hover:text-slate-600"
+              >
+                Cerrar
+              </button>
+            </header>
+
+            <form onSubmit={handleSubmitNewMember} className="space-y-4">
+              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Nombre
+                <input
+                  type="text"
+                  value={newMemberForm.name}
+                  onChange={(event) => setNewMemberForm((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder="Ej. Laura Gómez"
+                  className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  required
+                />
+              </label>
+
+              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Email
+                <input
+                  type="email"
+                  value={newMemberForm.email}
+                  onChange={(event) => setNewMemberForm((prev) => ({ ...prev, email: event.target.value }))}
+                  placeholder="nombre@empresa.com"
+                  className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  required
+                />
+              </label>
+
+              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Rol
+                <select
+                  value={newMemberForm.role}
+                  onChange={(event) =>
+                    setNewMemberForm((prev) => ({ ...prev, role: event.target.value as RoleKey }))
+                  }
+                  className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                >
+                  {ROLES.map((role) => (
+                    <option key={role.key} value={role.key}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddMemberModal(false);
+                    setNewMemberForm({ name: '', email: '', role: 'employee' });
+                  }}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
+                >
+                  Añadir miembro
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

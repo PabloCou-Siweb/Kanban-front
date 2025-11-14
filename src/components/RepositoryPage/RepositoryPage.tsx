@@ -1,86 +1,10 @@
 import React from 'react';
 import Sidebar, { DEFAULT_PROJECTS, SidebarProject } from '../Sidebar/Sidebar';
 import Header, { HeaderProps } from '../Header/Header';
-
-type RepoType = 'github' | 'design' | 'documentation' | 'other';
-
-type RepoLink = {
-  id: string;
-  label: string;
-  description: string;
-  url: string;
-  type: RepoType;
-};
-
-type CommitEntry = {
-  id: string;
-  sha: string;
-  message: string;
-  author: string;
-  timestamp: string;
-};
-
-const INITIAL_REPO_LINKS: RepoLink[] = [
-  {
-    id: 'repo-frontend',
-    label: 'Frontend · Kanban Web',
-    description: 'Repositorio principal del cliente React con Tailwind.',
-    url: 'https://github.com/empresa/kanban-frontend',
-    type: 'github',
-  },
-  {
-    id: 'repo-backend',
-    label: 'Backend · API Kanban',
-    description: 'Servicios Node/Koa, autenticación y tareas.',
-    url: 'https://github.com/empresa/kanban-backend',
-    type: 'github',
-  },
-  {
-    id: 'repo-design',
-    label: 'Librería de diseño',
-    description: 'Componentes Figma, tokens y guidelines.',
-    url: 'https://www.figma.com/file/kanban-design-system',
-    type: 'design',
-  },
-  {
-    id: 'repo-docs',
-    label: 'Documentación técnica',
-    description: 'Confluence con ADRs, diagramas y checklist de releases.',
-    url: 'https://docs.empresa.com/kanban',
-    type: 'documentation',
-  },
-];
-
-const COMMITS: CommitEntry[] = [
-  {
-    id: 'commit-001',
-    sha: 'a4f9c21',
-    message: 'refactor(board): mejora drag & drop y estados visuales',
-    author: 'Carlos Ortega',
-    timestamp: '12 Abr · 11:32',
-  },
-  {
-    id: 'commit-002',
-    sha: 'bb1d8f3',
-    message: 'feat(profile): pestaña estadísticas con métricas reales',
-    author: 'Ana Rodríguez',
-    timestamp: '12 Abr · 08:05',
-  },
-  {
-    id: 'commit-003',
-    sha: 'c7e5310',
-    message: 'chore(ci): añade job de linting y pruebas e2e',
-    author: 'María Sánchez',
-    timestamp: '11 Abr · 19:48',
-  },
-  {
-    id: 'commit-004',
-    sha: 'd9aa4c9',
-    message: 'fix(releases): corrige fechas en timeline',
-    author: 'Daniel Pérez',
-    timestamp: '11 Abr · 15:31',
-  },
-];
+import { RepoLink, RepoType } from './types';
+import { COMMITS, INITIAL_REPO_LINKS } from './constants';
+import RepoLinksSection from './RepoLinksSection';
+import CommitsSection from './CommitsSection';
 
 type RepositoryPageProps = {
   project?: SidebarProject | null;
@@ -95,13 +19,6 @@ type RepositoryPageProps = {
     name: string;
     role: 'admin' | 'product-owner' | 'employee';
   };
-};
-
-const REPO_TYPE_LABELS: Record<RepoType, string> = {
-  github: 'GitHub',
-  design: 'Design',
-  documentation: 'Docs',
-  other: 'Link',
 };
 
 const CURRENT_USER_FALLBACK = {
@@ -139,8 +56,6 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
 
   const projectList = React.useMemo(() => projects ?? DEFAULT_PROJECTS, [projects]);
   const canManageRepos = currentUser.role === 'admin' || currentUser.role === 'product-owner';
-
-  const repoCount = repoLinks.length;
 
   const handleOpenRepoModal = () => {
     setRepoForm({ label: '', description: '', url: '', type: 'github' });
@@ -207,62 +122,8 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
           </section>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <section className="space-y-4 rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-lg shadow-slate-900/5">
-              <header className="flex flex-col gap-1">
-                <h3 className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-semibold uppercase tracking-wide text-blue-600">
-                  Repositorios vinculados · {repoCount}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Enlaces directos a repos GitHub, documentación y librerías de diseño.
-                </p>
-              </header>
-
-              <ul className="space-y-3 text-sm text-slate-600">
-                {repoLinks.map((link) => (
-                  <li key={link.id} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 font-semibold uppercase tracking-wide">
-                        {REPO_TYPE_LABELS[link.type]}
-                      </span>
-                      <a
-                        href={link.url}
-                        className="text-xs font-semibold text-blue-600 transition hover:text-blue-700"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Abrir ↗
-                      </a>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold text-slate-900">{link.label}</span>
-                      {link.description && <span className="text-xs text-slate-500">{link.description}</span>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="space-y-4 rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-lg shadow-slate-900/5">
-              <header className="flex flex-col gap-1">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Commits recientes</h3>
-                <p className="text-xs text-slate-500">
-                  Seguimiento de las últimas contribuciones y su estado actual.
-                </p>
-              </header>
-
-              <ul className="space-y-3 text-sm text-slate-600">
-                {COMMITS.map((commit) => (
-                  <li key={commit.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span className="font-semibold text-slate-700">{commit.author}</span>
-                      <span>{commit.timestamp}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-slate-900">{commit.message}</span>
-                    <span className="text-xs text-slate-500">Hash {commit.sha}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <RepoLinksSection links={repoLinks} />
+            <CommitsSection commits={COMMITS} />
           </div>
         </main>
       </div>
