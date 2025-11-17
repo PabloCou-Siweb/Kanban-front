@@ -27,7 +27,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
 }) => {
   return (
     <div
-      className={`flex h-full max-h-full flex-col rounded-3xl border ${column.accent} p-4 shadow-sm shadow-slate-900/5 transition hover:-translate-y-1 hover:shadow-md`}
+      className={`flex h-full max-h-full flex-col rounded-3xl border ${column.accent} p-4 shadow-sm shadow-slate-900/5`}
       onDragOver={(event) => {
         event.preventDefault();
       }}
@@ -52,7 +52,7 @@ const BoardColumn: React.FC<BoardColumnProps> = ({
         {tasks.map((task) => (
           <article
             key={task.id}
-            className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm shadow-sm shadow-slate-900/5"
+            className="flex cursor-pointer flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm shadow-sm shadow-slate-900/5 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-md"
             draggable
             onDragStart={() => onDragStart(column.id, task.id)}
             onDragEnd={onDragEnd}

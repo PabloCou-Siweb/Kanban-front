@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar, { SidebarProject, DEFAULT_PROJECTS } from '../Sidebar/Sidebar';
 import Header, { HeaderProps } from '../Header/Header';
+import DatePicker from '../BoardPage/DatePicker';
 
 type ReleaseStatus = 'En progreso' | 'Sin lanzar' | 'Publicado';
 
@@ -702,7 +703,7 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                     required
                   />
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Estado
                   <select
                     value={releaseForm.status}
@@ -714,22 +715,18 @@ const ReleasesPage: React.FC<ReleasesPageProps> = ({
                     <option value="Publicado">Publicado</option>
                   </select>
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Fecha de inicio
-                  <input
-                    type="date"
+                  <DatePicker
                     value={releaseForm.startDate}
-                    onChange={(event) => handleReleaseFieldChange('startDate', event.target.value)}
-                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    onChange={(date) => handleReleaseFieldChange('startDate', date)}
                   />
                 </label>
-                <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Fecha de lanzamiento
-                  <input
-                    type="date"
+                  <DatePicker
                     value={releaseForm.releaseDate}
-                    onChange={(event) => handleReleaseFieldChange('releaseDate', event.target.value)}
-                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    onChange={(date) => handleReleaseFieldChange('releaseDate', date)}
                   />
                 </label>
               </div>

@@ -63,8 +63,8 @@ const Header: React.FC<HeaderProps> = ({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 z-30 mt-3 w-80 rounded-3xl border border-slate-200 bg-white p-4 text-left text-sm text-slate-600 shadow-xl shadow-slate-900/10">
-              <header className="mb-3 flex items-center justify-between">
+            <div className="absolute right-0 z-30 mt-3 flex w-80 max-h-96 flex-col rounded-3xl border border-slate-200 bg-white text-left text-sm text-slate-600 shadow-xl shadow-slate-900/10">
+              <header className="flex flex-shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">
                 <h2 className="text-sm font-semibold text-slate-900">Notificaciones</h2>
                 <button
                   type="button"
@@ -75,42 +75,44 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
               </header>
 
-              {hasNotifications ? (
-                <ul className="space-y-3">
-                  {notifications.map((notification) => (
-                    <li
-                      key={notification.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 transition hover:border-blue-200 hover:bg-blue-50"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          notification.onClick?.();
-                          setShowNotifications(false);
-                        }}
-                        className="flex w-full flex-col items-start gap-2 text-left"
+              <div className="overflow-y-auto px-4 py-4">
+                {hasNotifications ? (
+                  <ul className="space-y-3">
+                    {notifications.map((notification) => (
+                      <li
+                        key={notification.id}
+                        className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 transition hover:border-blue-200 hover:bg-blue-50"
                       >
-                        <div className="flex w-full items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
-                          <span>
-                            {notification.type === 'commit'
-                              ? 'Nuevo commit'
-                              : notification.type === 'task-assigned'
-                              ? 'Tarea asignada'
-                              : 'Actualización de tarea'}
-                          </span>
-                          <span>{notification.timestamp}</span>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
-                        <p className="text-xs text-slate-500">{notification.description}</p>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-xs text-slate-400">
-                  Sin notificaciones por ahora.
-                </div>
-              )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            notification.onClick?.();
+                            setShowNotifications(false);
+                          }}
+                          className="flex w-full flex-col items-start gap-2 text-left"
+                        >
+                          <div className="flex w-full items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
+                            <span>
+                              {notification.type === 'commit'
+                                ? 'Nuevo commit'
+                                : notification.type === 'task-assigned'
+                                ? 'Tarea asignada'
+                                : 'Actualización de tarea'}
+                            </span>
+                            <span>{notification.timestamp}</span>
+                          </div>
+                          <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
+                          <p className="text-xs text-slate-500">{notification.description}</p>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-xs text-slate-400">
+                    Sin notificaciones por ahora.
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

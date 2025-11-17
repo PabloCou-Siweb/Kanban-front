@@ -1,4 +1,5 @@
 import React from 'react';
+import { BOARD_MEMBERS } from '../BoardPage/boardData';
 
 export type SidebarProject = {
   id: string;
@@ -83,6 +84,7 @@ type SidebarProps = {
   onLogoutRequest?: () => void;
   onSelect?: (projectId: string) => void;
   selectedId?: string | null;
+  onCreateProject?: (project: Omit<SidebarProject, 'id'>) => void;
 };
 
 export const DEFAULT_PROJECTS: SidebarProject[] = [
@@ -135,11 +137,46 @@ const Sidebar: React.FC<SidebarProps> = ({
   onLogoutRequest,
   onSelect,
   selectedId = 'my-tasks',
+  onCreateProject,
 }) => {
   const projectList = projects ?? DEFAULT_PROJECTS;
+  const [showNewProjectModal, setShowNewProjectModal] = React.useState(false);
+  const [newProjectForm, setNewProjectForm] = React.useState({
+    name: '',
+    description: '',
+    team: '',
+    owner: '',
+  });
 
   const handleSelect = (projectId: string) => {
     onSelect?.(projectId);
+  };
+
+  const handleOpenNewProjectModal = () => {
+    setNewProjectForm({
+      name: '',
+      description: '',
+      team: '',
+      owner: '',
+    });
+    setShowNewProjectModal(true);
+  };
+
+  const handleCloseNewProjectModal = () => {
+    setShowNewProjectModal(false);
+  };
+
+  const handleSubmitNewProject = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (onCreateProject) {
+      onCreateProject({
+        name: newProjectForm.name.trim(),
+        description: newProjectForm.description.trim() || undefined,
+        team: newProjectForm.team.trim() || undefined,
+        owner: newProjectForm.owner.trim() || undefined,
+      });
+    }
+    setShowNewProjectModal(false);
   };
 
   return (
@@ -197,9 +234,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <span>Mis tareas</span>
             </button>
-            <h2 className="mt-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Proyectos
-            </h2>
+            <div className="mt-6 flex items-center justify-between">
+              <h2 className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Proyectos
+              </h2>
+              <button
+                type="button"
+                onClick={handleOpenNewProjectModal}
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-500 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Crear nuevo proyecto"
+              >
+                <span className="text-sm font-semibold">+</span>
+              </button>
+            </div>
           </>
         )}
 
@@ -243,6 +290,94 @@ const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && <span>Cerrar sesión</span>}
         </button>
       </div>
+      {showNewProjectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-6">
+          <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Crear nuevo proyecto</h2>
+                <p className="text-xs text-slate-500">Completa los datos para crear un nuevo proyecto.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseNewProjectModal}
+                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 transition hover:border-slate-300 hover:text-slate-600"
+              >
+                Cerrar
+              </button>
+            </header>
+
+            <form onSubmit={handleSubmitNewProject} className="space-y-4">
+              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Nombre del proyecto
+                <input
+                  type="text"
+                  value={newProjectForm.name}
+                  onChange={(event) => setNewProjectForm((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder="Ej: Marketing Launch"
+                  className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  required
+                />
+              </label>
+
+              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Descripción
+                <textarea
+                  value={newProjectForm.description}
+                  onChange={(event) => setNewProjectForm((prev) => ({ ...prev, description: event.target.value }))}
+                  placeholder="Breve descripción del proyecto"
+                  className="min-h-[80px] rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Equipo
+                  <input
+                    type="text"
+                    value={newProjectForm.team}
+                    onChange={(event) => setNewProjectForm((prev) => ({ ...prev, team: event.target.value }))}
+                    placeholder="Ej: Marketing"
+                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Responsable
+                  <select
+                    value={newProjectForm.owner}
+                    onChange={(event) => setNewProjectForm((prev) => ({ ...prev, owner: event.target.value }))}
+                    className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  >
+                    <option value="">Selecciona un responsable</option>
+                    {BOARD_MEMBERS.filter((member) => member.display !== 'Sin asignar').map((member) => (
+                      <option key={member.id} value={member.name}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCloseNewProjectModal}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
+                >
+                  Crear proyecto
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

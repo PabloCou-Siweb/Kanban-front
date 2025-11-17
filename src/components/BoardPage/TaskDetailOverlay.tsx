@@ -6,6 +6,83 @@ import {
   PRIORITY_OPTIONS,
   STATUS_BADGE_STYLES,
 } from './boardData';
+import DatePicker from './DatePicker';
+
+// Helper function to format Date to ISO string (YYYY-MM-DD) in local timezone
+const formatToISO = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+};
+
+// Helper function to convert display date to ISO format for date input
+const convertToDateInput = (displayDate: string): string => {
+  if (!displayDate || displayDate === 'Sin fecha') {
+    return '';
+  }
+  
+  // Try to parse common formats
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const months: Record<string, number> = {
+    'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+    'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11,
+  };
+  
+  if (displayDate === 'Hoy') {
+    return formatToISO(today);
+  }
+  
+  // Try to parse "DD MMM" format
+  const parts = displayDate.toLowerCase().trim().split(' ');
+  if (parts.length === 2 && months[parts[1]]) {
+    const day = parseInt(parts[0], 10);
+    const month = months[parts[1]];
+    const year = today.getFullYear();
+    const date = new Date(year, month, day);
+    // If the date is in the past, use next year
+    if (date < today) {
+      date.setFullYear(year + 1);
+    }
+    return formatToISO(date);
+  }
+  
+  return '';
+};
+
+// Helper function to parse ISO date string (YYYY-MM-DD) to local Date
+const parseISODate = (isoString: string): Date => {
+  const [year, month, day] = isoString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+// Helper function to convert ISO date to display format
+const convertToDisplayDate = (isoDate: string): string => {
+  if (!isoDate) {
+    return 'Sin fecha';
+  }
+  
+  const date = parseISODate(isoDate);
+  if (isNaN(date.getTime())) {
+    return 'Sin fecha';
+  }
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dateOnly = new Date(date);
+  dateOnly.setHours(0, 0, 0, 0);
+  
+  if (dateOnly.getTime() === today.getTime()) {
+    return 'Hoy';
+  }
+  
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  
+  return `${day} ${month}`;
+};
 
 type TaskDetailOverlayProps = {
   task: BoardTaskItem;
@@ -47,7 +124,18 @@ const TaskDetailOverlay: React.FC<TaskDetailOverlayProps> = ({
   onOpenAttachments,
   onOpenComments,
   onOpenLabels,
-}) => (
+}) => {
+  // State for date input value in ISO format
+  const [dateInputValue, setDateInputValue] = React.useState(() => 
+    convertToDateInput(taskDraft.due)
+  );
+
+  // Update date input when taskDraft changes
+  React.useEffect(() => {
+    setDateInputValue(convertToDateInput(taskDraft.due));
+  }, [taskDraft.due]);
+
+  return (
   <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4 md:px-8">
     <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/20">
       <header className="flex items-start justify-between">
@@ -117,7 +205,7 @@ const TaskDetailOverlay: React.FC<TaskDetailOverlayProps> = ({
 
           <div className="grid gap-4 text-sm text-slate-600 md:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Prioridad
                 <select
                   value={taskDraft.priority}
@@ -134,7 +222,7 @@ const TaskDetailOverlay: React.FC<TaskDetailOverlayProps> = ({
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Asignado a
                 <select
                   value={selectedMemberId}
@@ -154,13 +242,15 @@ const TaskDetailOverlay: React.FC<TaskDetailOverlayProps> = ({
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Fecha límite
-                <input
-                  type="text"
-                  value={taskDraft.due}
-                  onChange={(event) => onTaskDraftChange('due', event.target.value)}
-                  className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+                <DatePicker
+                  value={dateInputValue}
+                  onChange={(isoDate) => {
+                    setDateInputValue(isoDate);
+                    const displayDate = convertToDisplayDate(isoDate);
+                    onTaskDraftChange('due', displayDate);
+                  }}
                 />
               </label>
             </div>
@@ -340,7 +430,8 @@ const TaskDetailOverlay: React.FC<TaskDetailOverlayProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default TaskDetailOverlay;
 

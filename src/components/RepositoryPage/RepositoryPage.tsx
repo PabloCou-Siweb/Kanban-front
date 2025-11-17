@@ -42,6 +42,8 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
 
   const [repoLinks, setRepoLinks] = React.useState<RepoLink[]>(INITIAL_REPO_LINKS);
   const [showRepoModal, setShowRepoModal] = React.useState(false);
+  const [showTokenModal, setShowTokenModal] = React.useState(false);
+  const [githubToken, setGithubToken] = React.useState('');
   const [repoForm, setRepoForm] = React.useState<{
     label: string;
     description: string;
@@ -79,6 +81,23 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
     setShowRepoModal(false);
   };
 
+  const handleOpenTokenModal = () => {
+    setGithubToken('');
+    setShowTokenModal(true);
+  };
+
+  const handleCloseTokenModal = () => {
+    setShowTokenModal(false);
+  };
+
+  const handleSubmitToken = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Aquí se guardaría el token (por ejemplo, en localStorage o enviarlo al backend)
+    console.log('GitHub Token guardado:', githubToken);
+    setShowTokenModal(false);
+    setGithubToken('');
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
       <Sidebar
@@ -106,13 +125,22 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
               </div>
               {canManageRepos && (
-                <button
-                  type="button"
-                  onClick={handleOpenRepoModal}
-                  className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
-                >
-                  Añadir repositorio
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={handleOpenTokenModal}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
+                  >
+                    Configurar token GitHub
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenRepoModal}
+                    className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-600 transition hover:border-blue-300"
+                  >
+                    Añadir repositorio
+                  </button>
+                </div>
               )}
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-600">
@@ -241,6 +269,61 @@ const RepositoryPage: React.FC<RepositoryPageProps> = ({
                   className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
                 >
                   Guardar repositorio
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showTokenModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-6 py-10">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Configurar token de GitHub</h2>
+                <p className="text-xs text-slate-500">
+                  Introduce tu token de acceso personal de GitHub para habilitar la integración con los repositorios.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseTokenModal}
+                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-400 transition hover:border-slate-300 hover:text-slate-600"
+              >
+                Cerrar
+              </button>
+            </header>
+
+            <form onSubmit={handleSubmitToken} className="space-y-4">
+              <label className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Token de acceso personal
+                <input
+                  type="password"
+                  value={githubToken}
+                  onChange={(event) => setGithubToken(event.target.value)}
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                  className="rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  required
+                />
+                <p className="text-xs font-normal normal-case text-slate-400">
+                  Puedes generar un token en GitHub → Settings → Developer settings → Personal access tokens
+                </p>
+              </label>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleCloseTokenModal}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
+                >
+                  Guardar token
                 </button>
               </div>
             </form>

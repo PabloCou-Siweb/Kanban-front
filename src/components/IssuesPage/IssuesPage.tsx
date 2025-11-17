@@ -287,9 +287,8 @@ const IssuesPage: React.FC<IssuesPageProps> = ({
                     <th className="px-3 py-3 font-semibold">Prioridad</th>
                     <th className="px-3 py-3 font-semibold">Estado</th>
                     <th className="px-3 py-3 font-semibold">Reportado por</th>
-                    <th className="px-3 py-3 font-semibold">Asignado a</th>
                     <th className="px-3 py-3 font-semibold">Creado</th>
-                    {canManageIssues && <th className="px-3 py-3 font-semibold">Acciones</th>}
+                    {canManageIssues && <th className="min-w-[280px] px-3 py-3 font-semibold">Acciones</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
@@ -310,17 +309,16 @@ const IssuesPage: React.FC<IssuesPageProps> = ({
                         </span>
                       </td>
                       <td className="px-3 py-4 text-xs text-slate-500">{issue.reporter}</td>
-                      <td className="px-3 py-4 text-xs text-slate-500">{issue.assignee || 'Sin asignar'}</td>
                       <td className="px-3 py-4 text-xs text-slate-500">{formatDisplayDate(issue.createdAt)}</td>
                       {canManageIssues && (
                         <td className="px-3 py-4 text-xs">
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             {ISSUE_STATUSES.map((status) => (
                               <button
                                 key={`${issue.id}-${status}`}
                                 type="button"
                                 onClick={() => handleIssueStatusChange(issues.findIndex((item) => item.id === issue.id), status)}
-                                className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+                                className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${
                                   issue.status === status
                                     ? 'border-blue-300 bg-blue-50 text-blue-600'
                                     : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'

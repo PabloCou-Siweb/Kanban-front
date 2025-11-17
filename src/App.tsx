@@ -35,7 +35,7 @@ const App: React.FC = () => {
   const [pendingBoardTask, setPendingBoardTask] = useState<
     { taskId: string; columnId?: string; projectId: string } | null
   >(null);
-  const projects = useMemo(() => DEFAULT_PROJECTS, []);
+  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
 
   const selectedProject = selectionId === 'my-tasks'
     ? null
@@ -45,6 +45,24 @@ const App: React.FC = () => {
     setSelectionId(projectId);
     setPendingBoardTask(null);
     if (projectId === 'my-tasks') {
+      setView('main');
+    }
+  };
+
+  const handleCreateProject = (projectData: Omit<typeof DEFAULT_PROJECTS[0], 'id'>) => {
+    const newId = `project-${Date.now()}`;
+    const newProject = {
+      ...projectData,
+      id: newId,
+    };
+    setProjects((prev) => [...prev, newProject]);
+    setSelectionId(newId);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    if (selectionId === projectId) {
+      setSelectionId('my-tasks');
       setView('main');
     }
   };
@@ -95,6 +113,7 @@ const App: React.FC = () => {
         selectionId={selectionId}
         onSelect={handleSelect}
         projects={projects}
+        onCreateProject={handleCreateProject}
         headerNotifications={notifications}
         onOpenBoard={(project) => {
           setSelectionId(project.id);
@@ -228,6 +247,7 @@ const App: React.FC = () => {
         onLogout={() => setView('login')}
         headerNotifications={notifications}
         currentUser={{ name: 'María Sánchez', role: 'admin' }}
+        onDeleteProject={handleDeleteProject}
       />
     );
   }

@@ -109,6 +109,7 @@ type SettingsPageProps = {
     name: string;
     role: 'admin' | 'project-owner' | 'employee';
   };
+  onDeleteProject?: (projectId: string) => void;
 };
 
 const CURRENT_USER_FALLBACK = {
@@ -126,6 +127,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogout,
   headerNotifications,
   currentUser = CURRENT_USER_FALLBACK,
+  onDeleteProject,
 }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
@@ -135,6 +137,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     INITIAL_MEMBERS[0]?.id ?? null
   );
   const [showAddMemberModal, setShowAddMemberModal] = React.useState(false);
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = React.useState(false);
   const [newMemberForm, setNewMemberForm] = React.useState<{
     name: string;
     email: string;
@@ -225,6 +228,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     setNewMemberForm({ name: '', email: '', role: 'employee' });
   };
 
+  const handleDeleteProject = () => {
+    if (project && onDeleteProject) {
+      onDeleteProject(project.id);
+      setShowDeleteProjectConfirm(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
       <Sidebar
@@ -252,6 +262,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">{project ? project.name : 'Tablero principal'}</h2>
               </div>
               <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                {canManageMembers && project && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteProjectConfirm(true)}
+                    className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-600 transition hover:border-rose-300 hover:bg-rose-100"
+                  >
+                    Eliminar proyecto
+                  </button>
+                )}
               </div>
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-600">
@@ -374,7 +393,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   disabled={!selectedMember}
                   className="inline-flex w-fit items-center gap-2 rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Eliminar del proyecto
+                  Sacar del proyecto
                 </button>
               )}
             </section>
@@ -494,6 +513,36 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteProjectConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-6">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <header className="mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Eliminar proyecto</h2>
+              <p className="mt-2 text-sm text-slate-500">
+                ¿Estás seguro de que deseas eliminar el proyecto <span className="font-semibold text-slate-900">{project?.name}</span>? Esta acción no se puede deshacer y se perderán todos los datos asociados al proyecto.
+              </p>
+            </header>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteProjectConfirm(false)}
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/20 transition hover:bg-rose-600"
+              >
+                Eliminar proyecto
+              </button>
+            </div>
           </div>
         </div>
       )}

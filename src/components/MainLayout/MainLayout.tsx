@@ -17,6 +17,7 @@ type MainLayoutProps = {
   selectionId: string;
   onSelect: (projectId: string) => void;
   projects?: SidebarProject[];
+  onCreateProject?: (project: Omit<SidebarProject, 'id'>) => void;
   onOpenBoard?: (project: SidebarProject) => void;
   onOpenReleases?: (project: SidebarProject) => void;
   onOpenBacklogs?: (project: SidebarProject) => void;
@@ -45,6 +46,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   selectionId,
   onSelect,
   projects,
+  onCreateProject,
   onOpenBoard,
   onOpenReleases,
   onOpenBacklogs,
@@ -74,6 +76,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         onLogoutRequest={() => setShowLogoutConfirm(true)}
         selectedId={selectionId}
         onSelect={onSelect}
+        onCreateProject={onCreateProject}
       />
 
       <div className="flex min-h-screen flex-1 flex-col">

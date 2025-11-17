@@ -22,3 +22,24 @@ body {
   color: #0f172a;
   background-color: #0f172a;
 }
+
+/* Estilos para selects con bordes redondeados y dropdown estilizado */
+select {
+  border-radius: 0.75rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+select:focus {
+  outline: none;
+}
+
+/* Estilos para el dropdown del select (opciones) */
+select option {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
